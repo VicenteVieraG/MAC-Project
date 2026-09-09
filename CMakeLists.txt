@@ -1,0 +1,50 @@
+# Main CMake file
+
+#! CMake minimum version. Make sure your current CMake version is equal or greater than this
+cmake_minimum_required(VERSION 3.28.3)
+
+# Project name, version and languages
+#! Change the project name and version here
+project(MY_PROJECT VERSION 0.0.0 LANGUAGES C CXX)
+
+# Configure build options
+set(CMAKE_CXX_STANDARD 23)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+set(CMAKE_CXX_EXTENSIONS OFF)
+
+# Configuration to set binary output and modules directory.
+set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
+set(CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake/")
+
+# Set Sanitizer preset options
+set(SANITIZER_PRESET "default" CACHE STRING "Default sanitizer preset used by sanitizer helpers.")
+set_property(CACHE SANITIZER_PRESET PROPERTY STRINGS default debug thread memory leak)
+
+# Options
+option(BUILD_TESTS "Build Catch2 unit tests." OFF)
+option(BUILD_TESTS_WITH_MAIN "Build Catch2 Tests with custom main function." OFF)
+option(ENABLE_WARNINGS "Enable compiler warnings." OFF)
+option(ENABLE_WARNINGS_AS_ERRORS "Enable compiler warnings as errors." OFF)
+option(ENABLE_CLANG_TIDY "Enable clang-tidy static analysis." OFF)
+option(ENABLE_SANITIZERS "Enable sanitizer helpers for targets." OFF)
+option(ENABLE_LTO_GLOBALY "Enable LTO/IPO globally for Release and RelWithDebInfo targets." OFF)
+
+# Modules include
+include(LTO)
+include(Docs)
+include(Warnings)
+include(ClangTidy)
+include(Sanitizer)
+if(BUILD_TESTS)
+    include(CTest)
+    enable_testing()
+endif()
+
+# Subdirectories
+#! NOTE: The add_subdirectory order matters
+add_subdirectory(config)
+add_subdirectory(external)
+add_subdirectory(src)
+add_subdirectory(includes)
+add_subdirectory(app)
+add_subdirectory(tests)

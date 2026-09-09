@@ -1,0 +1,9 @@
+# Ignore build artifacts and documentation
+/build*/
+docs/html
+
+# Ignore Visual Studio Code settings
+.vscode
+
+# Ignore AI configuration files
+.codex
