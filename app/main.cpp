@@ -6,6 +6,7 @@
 #include <rlImGui.h>
 
 #include <window.hpp>
+#include <navBar.hpp>
 
 int main(int argc, char* argv[]) {
     std::cout << project_name << std::endl;
@@ -16,22 +17,18 @@ int main(int argc, char* argv[]) {
     constexpr int HEIGHT = 600;
 
     Window window(WIDTH, HEIGHT, project_name);
+    NavBar navBar;
 
     do {
         BeginDrawing();
+            ClearBackground(DARKGRAY);
 
-        ClearBackground(BLACK);
-
-        DrawText(
-            "Hello from raylib!",
-            20,
-            20,
-            30,
-            RAYWHITE
-        );
+            rlImGuiBegin();
+                navBar.draw();
+            rlImGuiEnd();
 
         EndDrawing();
-    }while(!WindowShouldClose());
+    } while(!WindowShouldClose());
 
     return 0;
 }

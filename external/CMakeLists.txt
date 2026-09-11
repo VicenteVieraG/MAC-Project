@@ -12,4 +12,7 @@ target_include_directories(imgui PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/imgui")
 
 add_library(rlimgui STATIC rlimgui/rlImGui.cpp)
 target_include_directories(rlimgui PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/rlimgui")
-target_link_libraries(rlimgui PUBLIC imgui raylib)
+target_link_libraries(rlimgui
+    PUBLIC imgui
+    PUBLIC raylib
+)

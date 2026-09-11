@@ -8,6 +8,7 @@ target_include_directories(${CMAKE_PROJECT_NAME}
 )
 target_link_libraries(${CMAKE_PROJECT_NAME}
     PRIVATE window
+    PRIVATE navBar
 )
 
 target_set_warnings(
