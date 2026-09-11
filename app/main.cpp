@@ -5,10 +5,33 @@
 #include <raylib.h>
 #include <rlImGui.h>
 
+#include <window.hpp>
+
 int main(int argc, char* argv[]) {
     std::cout << project_name << std::endl;
     std::cout << project_version << std::endl;
     std::cout << "C++ Standard: " << __cplusplus << std::endl;
+
+    constexpr int WIDTH = 800;
+    constexpr int HEIGHT = 600;
+
+    Window window(WIDTH, HEIGHT, project_name);
+
+    do {
+        BeginDrawing();
+
+        ClearBackground(BLACK);
+
+        DrawText(
+            "Hello from raylib!",
+            20,
+            20,
+            30,
+            RAYWHITE
+        );
+
+        EndDrawing();
+    }while(!WindowShouldClose());
 
     return 0;
 }
