@@ -6,6 +6,7 @@ target_include_directories(${CMAKE_PROJECT_NAME}
     PRIVATE ./
     PRIVATE ${CMAKE_BINARY_DIR}/configured_files/includes
 )
+target_link_libraries(${CMAKE_PROJECT_NAME} PRIVATE rlimgui)
 
 target_set_warnings(
     ${CMAKE_PROJECT_NAME}
