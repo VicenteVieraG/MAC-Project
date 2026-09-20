@@ -14,7 +14,6 @@ void NavBar::draw() {
         if (ImGui::MenuItem("Home", nullptr, this->currentScreen == Screen::Home)) this->currentScreen = Screen::Home;
 
         if (ImGui::MenuItem("Bayes", nullptr, this->currentScreen == Screen::Bayes)) this->currentScreen = Screen::Bayes;
-        
 
         ImGui::EndMainMenuBar();
     }
