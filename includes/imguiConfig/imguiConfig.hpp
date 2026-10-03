@@ -1,5 +1,5 @@
 #pragma once
 
 namespace imguiConfig {
-    void imguiConfig();
+    void setup();
 };

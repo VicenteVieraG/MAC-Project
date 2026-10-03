@@ -15,3 +15,13 @@ target_set_warnings(
     ${CMAKE_PROJECT_NAME}
     ${ENABLE_WARNINGS_AS_ERRORS}
 )
+
+# Bundle runtime resources beside the executable
+add_custom_target(${CMAKE_PROJECT_NAME}_assets
+    COMMAND ${CMAKE_COMMAND} -E copy_directory
+        "${PROJECT_SOURCE_DIR}/assets"
+        "$<TARGET_FILE_DIR:${CMAKE_PROJECT_NAME}>/assets"
+    COMMENT "Copying fonts and images beside the executable"
+    VERBATIM
+)
+add_dependencies(${CMAKE_PROJECT_NAME} ${CMAKE_PROJECT_NAME}_assets)
