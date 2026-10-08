@@ -16,7 +16,7 @@ add_library(implot STATIC
     implot/implot_demo.cpp
 )
 target_include_directories(implot PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/implot")
-target_link_libraries(implot PUBLIC imgui)
+target_link_libraries(implot PRIVATE imgui)
 
 add_library(rlimgui STATIC rlimgui/rlImGui.cpp)
 target_include_directories(rlimgui PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/rlimgui")

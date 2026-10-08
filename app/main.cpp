@@ -6,7 +6,7 @@
 #include <rlImGui.h>
 
 #include <window.hpp>
-#include <navBar.hpp>
+#include <appLayout.hpp>
 
 int main(int argc, char* argv[]) {
     std::cout << project_name << std::endl;
@@ -17,14 +17,14 @@ int main(int argc, char* argv[]) {
     constexpr int HEIGHT = 600;
 
     Window window(WIDTH, HEIGHT, project_name);
-    NavBar navBar;
+    AppLayout layout;
 
     do {
         BeginDrawing();
             ClearBackground(DARKGRAY);
 
             rlImGuiBegin();
-                navBar.draw();
+                layout.draw();
             rlImGuiEnd();
 
         EndDrawing();
