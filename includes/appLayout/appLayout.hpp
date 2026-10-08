@@ -1,6 +1,7 @@
 #pragma once
 
 #include <navBar.hpp>
+#include <home.hpp>
 
 class AppLayout {
     public:
@@ -10,4 +11,5 @@ class AppLayout {
         void draw();
     private:
         NavBar navBar;
+        Home home;
 };
