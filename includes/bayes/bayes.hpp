@@ -2,7 +2,9 @@
 
 class Bayes {
     public:
+        Bayes() = default;
+        ~Bayes() = default;
+        
         void draw();
-    private:
         
 };
