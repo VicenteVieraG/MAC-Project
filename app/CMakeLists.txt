@@ -21,7 +21,12 @@ add_custom_target(${CMAKE_PROJECT_NAME}_assets
     COMMAND ${CMAKE_COMMAND} -E copy_directory
         "${PROJECT_SOURCE_DIR}/assets"
         "$<TARGET_FILE_DIR:${CMAKE_PROJECT_NAME}>/assets"
-    COMMENT "Copying fonts and images beside the executable"
+    COMMAND ${CMAKE_COMMAND} -E make_directory
+        "$<TARGET_FILE_DIR:${CMAKE_PROJECT_NAME}>/data"
+    COMMAND ${CMAKE_COMMAND} -E copy_if_different
+        "${PROJECT_SOURCE_DIR}/data/dataset.csv"
+        "$<TARGET_FILE_DIR:${CMAKE_PROJECT_NAME}>/data/dataset.csv"
+    COMMENT "Copying fonts, images and dataset beside the executable"
     VERBATIM
 )
 add_dependencies(${CMAKE_PROJECT_NAME} ${CMAKE_PROJECT_NAME}_assets)
