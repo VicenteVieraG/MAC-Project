@@ -23,20 +23,16 @@ void BayesClassifier::train(){
     const auto sample = std::views::take(dataSet.records, sampleSize);
 
     for(auto& record : sample)
-        if(record.category == Category::camina) this->countCaminan++;
-        else this->countConducen++;
+        if(record.category == Category::camina) this->caminanTotal++;
+        else this->conducenTotal++;
     this->registerTotal = static_cast<double>(sample.size());
-
-    // Priori Probability
-    const double pPrioriCaminan = this->countCaminan/this->registerTotal;
-    const double pPrioriConducen = this->countConducen/this->registerTotal;
 
     std::cout
         <<registerTotal<<'\n'
-        <<countCaminan<<'\n'
-        <<countConducen<<'\n'
-        <<pPrioriCaminan<<'\n'
-        <<pPrioriConducen<<std::endl;
+        <<caminanTotal<<'\n'
+        <<conducenTotal<<'\n'
+        <<this->caminanTotal/this->registerTotal<<'\n'
+        <<this->conducenTotal/this->registerTotal<<std::endl;
     
     std::cout<<"---------------- Bins -------------------------"<<std::endl;
     for(auto& [age, income, category] : sample){
@@ -82,7 +78,7 @@ std::pair<double, double> BayesClassifier::suavizadoLaplace(const std::pair<int,
     const double alpha = 1.0;
 
     return std::make_pair(
-        static_cast<double>(caminan + alpha) / (this->countCaminan + alpha * k),
-        static_cast<double>(conducen + alpha) / (this->countConducen + alpha * k)
+        static_cast<double>(caminan + alpha) / (this->caminanTotal + alpha * k),
+        static_cast<double>(conducen + alpha) / (this->conducenTotal + alpha * k)
     );
 }

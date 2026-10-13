@@ -11,8 +11,11 @@ class BayesClassifier {
         void train(); // Make private for release
     private:
         double registerTotal;
-        double countCaminan;
-        double countConducen;
+        double caminanTotal;
+        double conducenTotal;
+        double pPrioriCaminan;
+        double pPrioriConducen;
+
 
         // [ageBin][incomeBin][category]
         std::array<std::array<std::array<int, 2>,3>,5> sampleBins{};
