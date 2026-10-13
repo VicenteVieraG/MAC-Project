@@ -1,6 +1,7 @@
 #include <appLayout.hpp>
 #include <imgui.h>
 #include <navBar.hpp>
+#include <bayes.hpp>
 
 void AppLayout::draw(){
     this->navBar.draw();
@@ -15,8 +16,8 @@ void AppLayout::draw(){
 
     if(ImGui::Begin("Workspace", nullptr, flags)) {
         switch (navBar.getCurrentScreen()) {
-            case Screen::Home: home.draw(); break;
-            // case Screen::Bayes: bayes.draw(); break;
+            case Screen::Home: this->home.draw(); break;
+            case Screen::Bayes: this->bayes.draw(); break;
         }
     }
     ImGui::End();

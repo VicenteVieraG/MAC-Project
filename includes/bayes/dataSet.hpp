@@ -9,14 +9,29 @@ enum class Category {
 };
 
 struct Person {
-    int age;
-    int income;
+    double age;
+    double income;
     Category category;
 };
 
+enum class BinAge {
+    joven,
+    adulto,
+    mayor
+};
+
+enum class BinIncome {
+    muyBajo,
+    bajo,
+    medio,
+    alto,
+    muyAlto
+};
+
 class DataSet {
-    private: std::vector<Person> dataSet;
     public:
+        std::vector<Person> records;
+
         void read(const std::string_view path);
         void print() const;
 };

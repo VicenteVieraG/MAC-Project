@@ -6,5 +6,4 @@ class Bayes {
         ~Bayes() = default;
         
         void draw();
-        
 };

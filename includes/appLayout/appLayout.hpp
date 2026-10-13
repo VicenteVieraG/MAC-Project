@@ -2,6 +2,7 @@
 
 #include <navBar.hpp>
 #include <home.hpp>
+#include <bayes.hpp>
 
 class AppLayout {
     public:
@@ -12,4 +13,5 @@ class AppLayout {
     private:
         NavBar navBar;
         Home home;
+        Bayes bayes;
 };

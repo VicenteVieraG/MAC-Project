@@ -1,9 +1,9 @@
 #include <dataSet.hpp>
 
-#include <vector>
-#include <string_view>
 #include <iostream>
+#include <vector>
 #include <string>
+#include <string_view>
 #include <fstream>
 #include <sstream>
 
@@ -25,16 +25,16 @@ void DataSet::read(const std::string_view path){
         std::getline(ss, income, ',');
         std::getline(ss, category, ',');
 
-        this->dataSet.push_back({
-            std::stoi(age),
-            std::stoi(income),
+        this->records.push_back({
+            std::stod(age),
+            std::stod(income),
             category == "Camina" ? Category::camina : Category::conduce
         });
     }
 }
 
 void DataSet::print() const {
-    for(const auto& [age, income, category] : this->dataSet)
+    for(const auto& [age, income, category] : this->records)
         std::cout
             <<"["
             <<age<<", "
