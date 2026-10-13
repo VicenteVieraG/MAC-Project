@@ -1,6 +1,7 @@
 #pragma once
 
 #include <utility>
+#include <array>
 
 #include "dataSet.hpp"
 
@@ -13,6 +14,9 @@ class BayesClassifier {
         double countCaminan;
         double countConducen;
 
+        // [ageBin][incomeBin][category]
+        std::array<std::array<std::array<int, 2>,3>,5> sampleBins{};
+
         void predictProba();
-        std::pair<double, double> suavizadoLaplace(const int count) const;
+        std::pair<double, double> suavizadoLaplace(const std::pair<int, int> count) const;
 };
