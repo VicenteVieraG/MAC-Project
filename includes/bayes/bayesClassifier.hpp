@@ -1,5 +1,7 @@
 #pragma once
 
+#include <utility>
+
 #include "dataSet.hpp"
 
 class BayesClassifier {
@@ -12,4 +14,5 @@ class BayesClassifier {
         double countConducen;
 
         void predictProba();
+        std::pair<double, double> suavizadoLaplace(const int count) const;
 };
