@@ -36,17 +36,7 @@ void BayesClassifier::train(){
     
     std::cout<<"---------------- Bins -------------------------"<<std::endl;
     for(auto& [age, income, category] : sample){
-        BinAge ageBin;
-        if(age < 30) ageBin = BinAge::joven;
-        else if(age < 60) ageBin = BinAge::adulto;
-        else ageBin = BinAge::mayor;
-
-        BinIncome incomeBin;
-        if(income < 20000) incomeBin = BinIncome::muyBajo;
-        else if(income < 30000) incomeBin = BinIncome::bajo;
-        else if(income < 40000) incomeBin = BinIncome::medio;
-        else if(income < 50000) incomeBin = BinIncome::alto;
-        else incomeBin = BinIncome::muyAlto;
+        const auto [ageBin, incomeBin] = getBin({age, income});
 
         this->sampleBins[static_cast<int>(incomeBin)][static_cast<int>(ageBin)][static_cast<int>(category)]++;
     }
@@ -71,14 +61,46 @@ void BayesClassifier::train(){
         }
     }
 }
+std::pair<BinAge, BinIncome> BayesClassifier::getBin(const std::pair<int, int> input) const {
+    const auto& [age, income] = input;
+    BinAge ageBin;
+    if(age < 30) ageBin = BinAge::joven;
+    else if(age < 60) ageBin = BinAge::adulto;
+    else ageBin = BinAge::mayor;
 
-std::pair<double, double> BayesClassifier::suavizadoLaplace(const std::pair<int, int> count) const {
+    BinIncome incomeBin;
+    if(income < 20000) incomeBin = BinIncome::muyBajo;
+    else if(income < 30000) incomeBin = BinIncome::bajo;
+    else if(income < 40000) incomeBin = BinIncome::medio;
+    else if(income < 50000) incomeBin = BinIncome::alto;
+    else incomeBin = BinIncome::muyAlto;
+
+    return {ageBin, incomeBin};
+}
+
+std::pair<double, double> BayesClassifier::suavizadoLaplace(const std::pair<BinAge, BinIncome> count) const {
     const auto& [caminan, conducen] = count;
     const double k = 3.0 * 5.0; // 3 age bins * 5 income bins
     const double alpha = 1.0;
 
     return std::make_pair(
-        static_cast<double>(caminan + alpha) / (this->caminanTotal + alpha * k),
-        static_cast<double>(conducen + alpha) / (this->conducenTotal + alpha * k)
+        static_cast<double>(static_cast<double>(caminan) + alpha) / (this->caminanTotal + alpha * k),
+        static_cast<double>(static_cast<double>(conducen) + alpha) / (this->conducenTotal + alpha * k)
     );
+}
+std::pair<double, double> BayesClassifier::predict(const Person input) {
+    const auto& [age, income, category] = input;
+    const auto [ageBin, incomeBin] = getBin({age, income});
+    this->pPrioriCaminan = this->caminanTotal / this->registerTotal;
+    this->pPrioriConducen = this->conducenTotal / this->registerTotal;
+    
+    const auto [lhpCaminan, lhpConducen] = suavizadoLaplace({ageBin, incomeBin});
+
+    const double scoreCaminan = this->pPrioriCaminan * lhpCaminan;
+    const double scoreConducen = this->pPrioriConducen * lhpConducen;
+
+    const double normalizationCaminan = scoreCaminan / (scoreCaminan + scoreConducen);
+    const double normalizationConducen = scoreConducen / (scoreCaminan + scoreConducen);
+
+    return {normalizationCaminan, normalizationConducen};
 }

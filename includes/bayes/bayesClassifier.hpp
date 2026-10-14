@@ -7,7 +7,7 @@
 
 class BayesClassifier {
     public:
-        void predict();
+        std::pair<double, double> predict(const Person input);
         void train(); // Make private for release
     private:
         double registerTotal;
@@ -17,9 +17,9 @@ class BayesClassifier {
         double pPrioriConducen;
 
 
-        // [ageBin][incomeBin][category]
+        // [incomeBin][ageBin][category]
         std::array<std::array<std::array<int, 2>,3>,5> sampleBins{};
-
+        std::pair<BinAge, BinIncome> getBin(const std::pair<int, int> input) const;
         void predictProba();
-        std::pair<double, double> suavizadoLaplace(const std::pair<int, int> count) const;
+        std::pair<double, double> suavizadoLaplace(const std::pair<BinAge, BinIncome> count) const;
 };
