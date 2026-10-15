@@ -7,8 +7,9 @@
 
 class BayesClassifier {
     public:
-        std::pair<double, double> predict(const Person input);
-        void train(); // Make private for release
+        void train();
+        Category predict(const Person input);
+        void predictProba();
     private:
         double registerTotal;
         double caminanTotal;
@@ -16,10 +17,11 @@ class BayesClassifier {
         double pPrioriCaminan;
         double pPrioriConducen;
 
-
-        // [incomeBin][ageBin][category]
-        std::array<std::array<std::array<int, 2>,3>,5> sampleBins{};
+        DataSet dataSet;
+        // Access Indexes: [ageBin][incomeBin][category]
+        std::array<std::array<std::array<int, 2>,5>,3> sampleBins{};
+        // Turns a Person record into a Bin
         std::pair<BinAge, BinIncome> getBin(const std::pair<int, int> input) const;
-        void predictProba();
-        std::pair<double, double> suavizadoLaplace(const std::pair<BinAge, BinIncome> count) const;
+        // Applies suavizado de Laplace for the respective bins of an input Person and returns thie likelihood probablities for <caminan, conducen>
+        std::pair<double, double> suavizadoLaplace(const std::pair<BinAge, BinIncome> bins) const;
 };
