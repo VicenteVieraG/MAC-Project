@@ -10,6 +10,9 @@ class BayesClassifier {
         void train();
         void partialFit(const Person& person);
         Category predict(const Person& input);
+        auto getDataSet() const noexcept -> auto { return this->dataSet; };
+        auto getSampleBins() const noexcept -> auto { return this->sampleBins; };
+        auto getRegisterTotal() const noexcept -> double { return this->registerTotal; };
     private:
         double registerTotal{};
         double caminanTotal{};
