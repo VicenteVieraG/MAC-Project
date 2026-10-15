@@ -93,9 +93,9 @@ std::pair<double, double> BayesClassifier::suavizadoLaplace(const std::pair<BinA
     );
 }
 
-Category BayesClassifier::predict(const Person input) {
-    const auto& [age, income, category] = input;
-    const auto& [ageBin, incomeBin] = getBin({age, income});
+Category BayesClassifier::predict(const Person& input) {
+    const auto [age, income, category] = input;
+    const auto [ageBin, incomeBin] = getBin({age, income});
     this->pPrioriCaminan = this->caminanTotal / this->registerTotal;
     this->pPrioriConducen = this->conducenTotal / this->registerTotal;
 
@@ -107,7 +107,5 @@ Category BayesClassifier::predict(const Person input) {
     const double normalizationCaminan = scoreCaminan / (scoreCaminan + scoreConducen);
     const double normalizationConducen = scoreConducen / (scoreCaminan + scoreConducen);
 
-    // return {normalizationCaminan, normalizationConducen};
-    // Temporal return until I find out what to return xd
-    return {};
+    return normalizationCaminan >= normalizationConducen ? Category::camina : Category::conduce;
 }

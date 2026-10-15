@@ -8,14 +8,14 @@
 class BayesClassifier {
     public:
         void train();
-        Category predict(const Person input);
-        void predictProba();
+        void partialFit(const Person& person);
+        Category predict(const Person& input);
     private:
-        double registerTotal;
-        double caminanTotal;
-        double conducenTotal;
-        double pPrioriCaminan;
-        double pPrioriConducen;
+        double registerTotal{};
+        double caminanTotal{};
+        double conducenTotal{};
+        double pPrioriCaminan{};
+        double pPrioriConducen{};
 
         DataSet dataSet;
         // Access Indexes: [ageBin][incomeBin][category]
