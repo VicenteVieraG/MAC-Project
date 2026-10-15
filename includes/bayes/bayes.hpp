@@ -1,9 +1,9 @@
 #pragma once
 
+#include <optional>
+#include "bayesClassifier.hpp"
+
 class Bayes {
-    public:
-        Bayes() = default;
-        ~Bayes() = default;
-        
-        void draw();
+    public: void draw();
+    private: std::optional<BayesClassifier> bayesClassifier;
 };

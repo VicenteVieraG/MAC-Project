@@ -5,12 +5,15 @@ cmake_minimum_required(VERSION 3.28.3)
 
 # Project name, version and languages
 #! Change the project name and version here
-project(MAC_Project VERSION 0.2.5 LANGUAGES C CXX)
+project(MAC_Project VERSION 0.2.6 LANGUAGES C CXX)
 
 # Configure build options
 set(CMAKE_CXX_STANDARD 23)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
+
+# Define DEBUG only for Debug builds, including multi-configuration generators.
+add_compile_definitions($<$<CONFIG:Debug>:DEBUG>)
 
 # Configuration to set binary output and modules directory.
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
