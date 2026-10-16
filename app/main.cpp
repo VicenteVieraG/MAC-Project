@@ -8,9 +8,10 @@
 #include <window.hpp>
 #include <appLayout.hpp>
 
-int main(int argc, char* argv[]) {
+int main() {
     std::cout << project_name << std::endl;
     std::cout << project_version << std::endl;
+    std::cout << authors << std::endl;
     std::cout << "C++ Standard: " << __cplusplus << std::endl;
 
     constexpr int WIDTH = 800;

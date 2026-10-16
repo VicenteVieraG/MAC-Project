@@ -30,4 +30,5 @@ class Bayes {
         std::optional<Category> predictionResult;
         std::optional<Person> addedPerson;
         std::size_t scatterRecordCount{};
+        bool scatterNeedsFit{};
 };

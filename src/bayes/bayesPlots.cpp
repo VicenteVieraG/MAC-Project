@@ -54,13 +54,17 @@ void Bayes::drawScatterPlot(float height) {
     for(const Person& person : records)
         points[static_cast<std::size_t>(person.category)].emplace_back(person.age, person.income);
 
-    // Refit after additions, while preserving the user's zoom between updates.
-    if(records.size() != this->scatterRecordCount) ImPlot::SetNextAxesToFit();
+    // Include new records and predictions without resetting zoom on every frame.
+    if(records.size() != this->scatterRecordCount || this->scatterNeedsFit)
+        ImPlot::SetNextAxesToFit();
     ImPlot::PushStyleVar(ImPlotStyleVar_PlotMinSize, ImVec2(0.0f, 0.0f));
     if(ImPlot::BeginPlot("##AgeIncomeScatter", ImVec2(-1.0f, height), ImPlotFlags_NoMouseText)) {
         ImPlot::SetupAxes("Age (years)", "Income");
-        // Keep both categories visible so hover always describes a displayed point.
-        ImPlot::SetupLegend(ImPlotLocation_NorthEast, ImPlotLegendFlags_NoButtons);
+        // Keep the legend clear of points, including predictions at the plot edges.
+        ImPlotLegendFlags legendFlags = ImPlotLegendFlags_NoButtons | ImPlotLegendFlags_Outside;
+        if(ImGui::GetContentRegionAvail().x >= 24.0f * ImGui::GetFontSize())
+            legendFlags |= ImPlotLegendFlags_Horizontal;
+        ImPlot::SetupLegend(ImPlotLocation_South, legendFlags);
 
         constexpr const char* labels[] = {"Camina", "Conduce"};
         constexpr ImVec4 colors[] = {
@@ -78,12 +82,24 @@ void Bayes::drawScatterPlot(float height) {
             }, points[category].data(), static_cast<int>(points[category].size()), spec);
         }
 
+        const float predictionMarkerSize = markerSize * 2.0f;
+        if(this->predictionResult) {
+            ImPlotSpec spec;
+            spec.Marker = ImPlotMarker_Asterisk;
+            spec.MarkerSize = predictionMarkerSize;
+            spec.LineWeight = 2.0f;
+            spec.LineColor = ImVec4(0.78f, 0.52f, 1.00f, 1.0f);
+            ImPlot::PlotScatter("Prediction", &this->predictionInput.age,
+                &this->predictionInput.income, 1, spec);
+        }
+
         if(ImPlot::IsPlotHovered()) {
             const ImVec2 mouse = ImGui::GetMousePos();
             const ImPlotRect limits = ImPlot::GetPlotLimits();
             const float hoverRadius = markerSize + 4.0f;
             float nearestDistanceSquared = hoverRadius * hoverRadius;
             const Person* hovered = nullptr;
+            bool hoveringPrediction = false;
             // Use screen distance: age and income have very different scales.
             for(const Person& person : records) {
                 if(!limits.Contains(person.age, person.income)) continue;
@@ -96,13 +112,29 @@ void Bayes::drawScatterPlot(float height) {
                     hovered = &person;
                 }
             }
+            if(this->predictionResult && limits.Contains(this->predictionInput.age, this->predictionInput.income)) {
+                const ImVec2 pixel = ImPlot::PlotToPixels(this->predictionInput.age, this->predictionInput.income);
+                const float dx = mouse.x - pixel.x;
+                const float dy = mouse.y - pixel.y;
+                const float distanceSquared = dx * dx + dy * dy;
+                const float predictionHoverRadius = predictionMarkerSize + 4.0f;
+                // Prefer the prediction when it overlaps an existing record exactly.
+                if(distanceSquared < predictionHoverRadius * predictionHoverRadius
+                    && (!hovered || distanceSquared <= nearestDistanceSquared)) {
+                    hovered = &this->predictionInput;
+                    hoveringPrediction = true;
+                }
+            }
             if(hovered) {
                 ImPlot::PushPlotClipRect();
                 ImPlot::GetPlotDrawList()->AddCircle(
-                    ImPlot::PlotToPixels(hovered->age, hovered->income), markerSize + 3.0f,
+                    ImPlot::PlotToPixels(hovered->age, hovered->income),
+                    (hoveringPrediction ? predictionMarkerSize : markerSize) + 3.0f,
                     ImGui::GetColorU32(ImGuiCol_Text), 0, 2.0f);
                 ImPlot::PopPlotClipRect();
                 ImGui::BeginTooltip();
+                if(hoveringPrediction)
+                    ImGui::Text("Prediction: %s", *this->predictionResult == Category::camina ? "Camina" : "Conduce");
                 ImGui::Text("Age: %.15g years", hovered->age);
                 ImGui::Text("Income: %.15g", hovered->income);
                 ImGui::EndTooltip();
@@ -110,6 +142,7 @@ void Bayes::drawScatterPlot(float height) {
         }
         ImPlot::EndPlot();
         this->scatterRecordCount = records.size();
+        this->scatterNeedsFit = false;
     }
     ImPlot::PopStyleVar();
 }

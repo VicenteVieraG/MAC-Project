@@ -132,8 +132,10 @@ void Bayes::drawPrediction() {
     const std::string error = validatePerson(this->predictionInput);
 
     ImGui::BeginDisabled(!error.empty() || this->bayesClassifier->getRegisterTotal() == 0.0);
-    if(ImGui::Button("Predict", ImVec2(-1.0f, 0.0f)))
+    if(ImGui::Button("Predict", ImVec2(-1.0f, 0.0f))) {
         this->predictionResult = this->bayesClassifier->predict(this->predictionInput);
+        this->scatterNeedsFit = true;
+    }
     ImGui::EndDisabled();
 
     if(!error.empty()) ImGui::TextWrapped("%s", error.c_str());

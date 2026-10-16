@@ -3,6 +3,8 @@
 #include <cstdint>
 #include <string_view>
 
+static constexpr std::string_view authors = "@AUTHORS@";
+
 static constexpr std::string_view project_name = "@PROJECT_NAME@";
 static constexpr std::string_view project_version = "@PROJECT_VERSION@";
 
