@@ -96,7 +96,8 @@ void Bayes::drawContent() {
             ImGui::EndTabItem();
         }
         if(ImGui::BeginTabItem("Plots")) {
-            drawHint("Space reserved for future plots.");
+            if(ImGui::BeginChild("BayesPlots")) this->drawPlotsView();
+            ImGui::EndChild();
             ImGui::EndTabItem();
         }
         ImGui::EndTabBar();

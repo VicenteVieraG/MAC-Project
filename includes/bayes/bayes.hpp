@@ -1,5 +1,6 @@
 #pragma once
 
+#include <cstddef>
 #include <optional>
 #include <string>
 #include "bayesClassifier.hpp"
@@ -11,6 +12,8 @@ class Bayes {
     private:
         void drawContent();
         void drawDataView();
+        void drawPlotsView();
+        void drawScatterPlot(float height);
         void drawConfusionMatrix();
         void refreshEvaluation();
         void drawBinsTable(float height);
@@ -26,4 +29,5 @@ class Bayes {
         Person newPersonInput{25.0, 25000.0, Category::camina};
         std::optional<Category> predictionResult;
         std::optional<Person> addedPerson;
+        std::size_t scatterRecordCount{};
 };

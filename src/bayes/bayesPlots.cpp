@@ -3,6 +3,7 @@
 #include <algorithm>
 #include <array>
 #include <string>
+#include <vector>
 
 #include <imgui.h>
 #include <implot.h>
@@ -22,6 +23,95 @@ namespace {
         };
         return ImPlot::AddColormap(name, colors, IM_ARRAYSIZE(colors), false);
     }
+}
+
+void Bayes::drawPlotsView() {
+    const float fontSize = ImGui::GetFontSize();
+    const float plotHeight = std::clamp(ImGui::GetContentRegionAvail().y * 0.65f,
+        16.0f * fontSize, 26.0f * fontSize);
+
+    ImGui::SeparatorText("Age and income");
+    ImGui::TextDisabled("People: %zu", this->bayesClassifier->getDataSet().records.size());
+    ImGui::TextWrapped("All records, including people added this session. Hover over a point for details.");
+    this->drawScatterPlot(plotHeight);
+
+    ImGui::Spacing();
+    ImGui::SeparatorText("Decision regions");
+    if(ImGui::BeginChild("DecisionRegionPlaceholder", ImVec2(0.0f, 10.0f * fontSize),
+        ImGuiChildFlags_Borders))
+        ImGui::TextWrapped("Space reserved for the decision-region plot.");
+    ImGui::EndChild();
+}
+
+void Bayes::drawScatterPlot(float height) {
+    const auto& records = this->bayesClassifier->getDataSet().records;
+    if(records.empty()) {
+        ImGui::TextWrapped("No people to plot. Add a person using the input menu.");
+        return;
+    }
+
+    std::array<std::vector<ImPlotPoint>, 2> points;
+    for(const Person& person : records)
+        points[static_cast<std::size_t>(person.category)].emplace_back(person.age, person.income);
+
+    // Refit after additions, while preserving the user's zoom between updates.
+    if(records.size() != this->scatterRecordCount) ImPlot::SetNextAxesToFit();
+    ImPlot::PushStyleVar(ImPlotStyleVar_PlotMinSize, ImVec2(0.0f, 0.0f));
+    if(ImPlot::BeginPlot("##AgeIncomeScatter", ImVec2(-1.0f, height), ImPlotFlags_NoMouseText)) {
+        ImPlot::SetupAxes("Age (years)", "Income");
+        // Keep both categories visible so hover always describes a displayed point.
+        ImPlot::SetupLegend(ImPlotLocation_NorthEast, ImPlotLegendFlags_NoButtons);
+
+        constexpr const char* labels[] = {"Camina", "Conduce"};
+        constexpr ImVec4 colors[] = {
+            {0.39f, 0.67f, 1.00f, 1.0f},
+            {1.00f, 0.66f, 0.32f, 1.0f}
+        };
+        const float markerSize = std::max(4.0f, ImGui::GetFontSize() * 0.25f);
+        for(std::size_t category = 0; category < points.size(); ++category) {
+            ImPlotSpec spec;
+            spec.Marker = category == 0 ? ImPlotMarker_Circle : ImPlotMarker_Diamond;
+            spec.MarkerSize = markerSize;
+            spec.LineColor = colors[category];
+            ImPlot::PlotScatterG(labels[category], [](int index, void* data) {
+                return static_cast<const ImPlotPoint*>(data)[index];
+            }, points[category].data(), static_cast<int>(points[category].size()), spec);
+        }
+
+        if(ImPlot::IsPlotHovered()) {
+            const ImVec2 mouse = ImGui::GetMousePos();
+            const ImPlotRect limits = ImPlot::GetPlotLimits();
+            const float hoverRadius = markerSize + 4.0f;
+            float nearestDistanceSquared = hoverRadius * hoverRadius;
+            const Person* hovered = nullptr;
+            // Use screen distance: age and income have very different scales.
+            for(const Person& person : records) {
+                if(!limits.Contains(person.age, person.income)) continue;
+                const ImVec2 pixel = ImPlot::PlotToPixels(person.age, person.income);
+                const float dx = mouse.x - pixel.x;
+                const float dy = mouse.y - pixel.y;
+                const float distanceSquared = dx * dx + dy * dy;
+                if(distanceSquared < nearestDistanceSquared) {
+                    nearestDistanceSquared = distanceSquared;
+                    hovered = &person;
+                }
+            }
+            if(hovered) {
+                ImPlot::PushPlotClipRect();
+                ImPlot::GetPlotDrawList()->AddCircle(
+                    ImPlot::PlotToPixels(hovered->age, hovered->income), markerSize + 3.0f,
+                    ImGui::GetColorU32(ImGuiCol_Text), 0, 2.0f);
+                ImPlot::PopPlotClipRect();
+                ImGui::BeginTooltip();
+                ImGui::Text("Age: %.15g years", hovered->age);
+                ImGui::Text("Income: %.15g", hovered->income);
+                ImGui::EndTooltip();
+            }
+        }
+        ImPlot::EndPlot();
+        this->scatterRecordCount = records.size();
+    }
+    ImPlot::PopStyleVar();
 }
 
 void Bayes::drawConfusionMatrix() {
