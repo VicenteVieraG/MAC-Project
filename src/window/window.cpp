@@ -5,6 +5,7 @@
 #include <imguiConfig.hpp>
 #include <raylib.h>
 #include <imgui.h>
+#include <implot.h>
 #include <rlImGui.h>
 
 Window::Window(int width, int height, std::string_view title) : width(width), height(height) {
@@ -17,9 +18,11 @@ Window::Window(int width, int height, std::string_view title) : width(width), he
     rlImGuiBeginInitImGui();
         imguiConfig::setup();
     rlImGuiEndInitImGui();
+    ImPlot::CreateContext();
 }
 
 Window::~Window() {
+    ImPlot::DestroyContext();
     rlImGuiShutdown();
     CloseWindow();
 }

@@ -43,12 +43,7 @@ void Bayes::drawDataView() {
     this->drawDataSetTable(tableHeight);
 
     ImGui::Spacing();
-    if(ImGui::BeginChild("ConfusionMatrixPlaceholder", ImVec2(0.0f, 6.0f * fontSize),
-        ImGuiChildFlags_Borders)) {
-        ImGui::TextUnformatted("Confusion matrix");
-        drawTableNote("Coming later");
-    }
-    ImGui::EndChild();
+    this->drawConfusionMatrix();
 }
 
 void Bayes::drawBinsTable(float height) {

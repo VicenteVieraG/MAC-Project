@@ -63,6 +63,7 @@ void Bayes::draw(){
             this->trainingError = std::string("Could not load training data: ") + error.what();
             this->bayesClassifier.emplace();
         }
+        this->refreshEvaluation();
     }
 
     const ImVec2 available = ImGui::GetContentRegionAvail();
@@ -100,6 +101,12 @@ void Bayes::drawContent() {
         }
         ImGui::EndTabBar();
     }
+}
+
+void Bayes::refreshEvaluation() {
+    this->evaluationResult = {};
+    if(this->bayesClassifier && this->bayesClassifier->getRegisterTotal() > 0.0)
+        this->evaluationResult.evaluate(*this->bayesClassifier, this->bayesClassifier->getTestRecords());
 }
 
 void Bayes::drawSidebar() {
@@ -161,6 +168,7 @@ void Bayes::drawNewPerson() {
     ImGui::BeginDisabled(!error.empty());
     if(ImGui::Button("Add person", ImVec2(-1.0f, 0.0f))) {
         this->addedPerson = this->bayesClassifier->addPerson(this->newPersonInput);
+        this->refreshEvaluation();
         // Keep an existing prediction in sync with the updated model.
         if(this->predictionResult)
             this->predictionResult = this->bayesClassifier->predict(this->predictionInput);

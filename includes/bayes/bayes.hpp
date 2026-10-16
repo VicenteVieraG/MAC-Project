@@ -3,6 +3,7 @@
 #include <optional>
 #include <string>
 #include "bayesClassifier.hpp"
+#include "evaluationResult.hpp"
 
 class Bayes {
     public:
@@ -10,6 +11,8 @@ class Bayes {
     private:
         void drawContent();
         void drawDataView();
+        void drawConfusionMatrix();
+        void refreshEvaluation();
         void drawBinsTable(float height);
         void drawDataSetTable(float height);
         void drawSidebar();
@@ -17,6 +20,7 @@ class Bayes {
         void drawNewPerson();
 
         std::optional<BayesClassifier> bayesClassifier;
+        EvaluationResult evaluationResult;
         std::string trainingError;
         Person predictionInput{25.0, 25000.0, Category::camina};
         Person newPersonInput{25.0, 25000.0, Category::camina};
