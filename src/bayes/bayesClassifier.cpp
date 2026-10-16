@@ -69,6 +69,14 @@ void BayesClassifier::partialFit(const Person& person) {
     registerTotal++;
 }
 
+Person BayesClassifier::addPerson(const Person& person) {
+    const Person newPerson = person;
+    this->dataSet.records.push_back(newPerson);
+    this->partialFit(newPerson);
+
+    return newPerson;
+}
+
 std::pair<BinAge, BinIncome> BayesClassifier::getBin(const std::pair<double, double> input) const {
     const auto& [age, income] = input;
     BinAge ageBin;

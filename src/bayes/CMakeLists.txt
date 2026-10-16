@@ -1,5 +1,6 @@
 add_library(bayes STATIC
     bayes.cpp
+    bayesTables.cpp
     dataSet.cpp
     evaluationResult.cpp
     bayesClassifier.cpp

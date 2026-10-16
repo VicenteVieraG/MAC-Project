@@ -69,21 +69,51 @@ void Bayes::draw(){
     if(const auto [x, y] = available; x <= 0.0f || y <= 0.0f) return;
 
     const float sidebarWidth = std::min(available.x, 20.0f * ImGui::GetFontSize());
-    ImGui::SetCursorPosX(ImGui::GetCursorPosX() + available.x - sidebarWidth);
-    if(ImGui::BeginChild("BayesSidebar", ImVec2(sidebarWidth, available.y), ImGuiChildFlags_Borders)) {
-        ImGui::TextUnformatted("Bayes");
-        if(!this->trainingError.empty())
-            ImGui::TextWrapped("%s", this->trainingError.c_str());
-        const double trainingSampleCount = this->bayesClassifier->getRegisterTotal();
-        ImGui::TextDisabled("Training samples: %.0f", trainingSampleCount);
-        if(trainingSampleCount == 0.0)
-            ImGui::TextWrapped("No training samples loaded. Add a person below to start.");
+    const ImVec2 spacing = ImGui::GetStyle().ItemSpacing;
+    const bool sideBySide = available.x >= sidebarWidth + spacing.x + 18.0f * ImGui::GetFontSize();
+    const float contentWidth = sideBySide ? available.x - sidebarWidth - spacing.x : available.x;
+    const float contentHeight = sideBySide ? available.y : std::max(1.0f, (available.y - spacing.y) * 0.55f);
+    const float sidebarHeight = sideBySide ? available.y : std::max(1.0f, available.y - spacing.y - contentHeight);
 
-        this->drawPrediction();
-        ImGui::Spacing();
-        this->drawNewPerson();
-    }
+    if(ImGui::BeginChild("BayesContent", ImVec2(contentWidth, contentHeight), ImGuiChildFlags_None,
+        ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse))
+        this->drawContent();
     ImGui::EndChild();
+
+    if(sideBySide) ImGui::SameLine(0.0f, spacing.x);
+    if(ImGui::BeginChild("BayesSidebar", ImVec2(sideBySide ? sidebarWidth : available.x, sidebarHeight),
+        ImGuiChildFlags_Borders))
+        this->drawSidebar();
+    ImGui::EndChild();
+}
+
+void Bayes::drawContent() {
+    if(ImGui::BeginTabBar("BayesViews")) {
+        if(ImGui::BeginTabItem("Data")) {
+            if(ImGui::BeginChild("BayesData")) this->drawDataView();
+            ImGui::EndChild();
+            ImGui::EndTabItem();
+        }
+        if(ImGui::BeginTabItem("Plots")) {
+            drawHint("Space reserved for future plots.");
+            ImGui::EndTabItem();
+        }
+        ImGui::EndTabBar();
+    }
+}
+
+void Bayes::drawSidebar() {
+    ImGui::TextUnformatted("Bayes");
+    if(!this->trainingError.empty())
+        ImGui::TextWrapped("%s", this->trainingError.c_str());
+    const double trainingSampleCount = this->bayesClassifier->getRegisterTotal();
+    ImGui::TextDisabled("Training samples: %.0f", trainingSampleCount);
+    if(trainingSampleCount == 0.0)
+        ImGui::TextWrapped("No training samples loaded. Add a person below to start.");
+
+    this->drawPrediction();
+    ImGui::Spacing();
+    this->drawNewPerson();
 }
 
 void Bayes::drawPrediction() {
@@ -130,8 +160,7 @@ void Bayes::drawNewPerson() {
 
     ImGui::BeginDisabled(!error.empty());
     if(ImGui::Button("Add person", ImVec2(-1.0f, 0.0f))) {
-        this->bayesClassifier->partialFit(this->newPersonInput);
-        this->addedPerson = this->newPersonInput;
+        this->addedPerson = this->bayesClassifier->addPerson(this->newPersonInput);
         // Keep an existing prediction in sync with the updated model.
         if(this->predictionResult)
             this->predictionResult = this->bayesClassifier->predict(this->predictionInput);

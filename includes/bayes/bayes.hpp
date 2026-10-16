@@ -7,8 +7,12 @@
 class Bayes {
     public:
         void draw();
-
     private:
+        void drawContent();
+        void drawDataView();
+        void drawBinsTable(float height);
+        void drawDataSetTable(float height);
+        void drawSidebar();
         void drawPrediction();
         void drawNewPerson();
 
