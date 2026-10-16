@@ -5,6 +5,7 @@
 #include <vector>
 #include <array>
 #include <cmath>
+#include <cstddef>
 #include <ranges>
 #include <utility>
 
@@ -14,7 +15,11 @@ void BayesClassifier::train(){
     this->resetCounters();
     this->dataSet.read("data/dataset.csv");
 
-    const double sampleSize = std::floor(static_cast<double>(this->dataSet.records.size()) * 0.8);
+    const std::size_t sampleSize = static_cast<std::size_t>(
+        std::floor(static_cast<double>(this->dataSet.records.size()) * 0.8));
+    this->testRecords.assign(
+        this->dataSet.records.begin() + static_cast<std::ptrdiff_t>(sampleSize),
+        this->dataSet.records.end());
     const auto sample = std::views::take(this->dataSet.records, sampleSize);
 
     // Counting and Bin Table
@@ -130,6 +135,7 @@ Category BayesClassifier::predict(const Person& input) {
 
 void BayesClassifier::resetCounters() noexcept {
     this->dataSet.records.clear();
+    this->testRecords.clear();
     this->sampleBins = {};
     this->registerTotal = {};
     this->caminanTotal = {};

@@ -10,7 +10,6 @@
 #include <implot.h>
 
 #include "bayesClassifier.hpp"
-#include "evaluationResult.hpp"
 
 namespace {
     std::string categoryLabel(Category category) {
@@ -60,9 +59,6 @@ void Bayes::draw(){
         this->bayesClassifier.emplace();
         try {
             this->bayesClassifier->train();
-
-            EvaluationResult evaluation; //TEST Evaluation Result
-            evaluation.evaluate(*this->bayesClassifier); //TEST Evaluation Result
         } catch(const std::exception& error) {
             this->trainingError = std::string("Could not load training data: ") + error.what();
             this->bayesClassifier.emplace();

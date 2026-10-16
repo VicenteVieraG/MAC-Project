@@ -1,48 +1,48 @@
 #include "evaluationResult.hpp"
 
-#include <cmath>
 #include <iomanip>
 #include <iostream>
+#include <stdexcept>
 
-void EvaluationResult::evaluate(BayesClassifier& classifier) {
+void EvaluationResult::evaluate(BayesClassifier& classifier, const std::vector<Person>& testRecords) {
+    evaluated = false;
+    evaluatedSampleCount = 0;
+    VP = 0;
+    VN = 0;
+    FP = 0;
+    FN = 0;
+    sensibilidad.reset();
+    especificidad.reset();
 
-    int VP = 0;
-    int VN = 0;
-    int FP = 0;
-    int FN = 0;
+    if(classifier.getRegisterTotal() == 0.0)
+        throw std::logic_error("Cannot evaluate an untrained classifier.");
 
-    const auto& dataSet = classifier.getDataSet();
-
-    const std::size_t sampleSize = static_cast<std::size_t>(
-        std::floor(dataSet.records.size() * 0.8)
-    );
-
-    // Recorrer el 20% restante
-    for (std::size_t i = sampleSize;
-         i < dataSet.records.size(); i++) {
-
-        const Person& person = dataSet.records[i];
+    for(const Person& person : testRecords){
         Category real = person.category;
         Category predicted = classifier.predict(person);
 
         //VP: Verdadero Positivo, VN: Verdadero Negativo, FP: Falso Positivo, FN: Falso Negativo
 
-        if (real == Category::camina &&
-            predicted == Category::camina) {
-            VP++;
-        }
-        else if (real == Category::conduce &&
-                 predicted == Category::conduce) {
-            VN++;
-        }
-        else if (real == Category::conduce &&
-                 predicted == Category::camina) {
-            FP++;
-        }
-        else if (real == Category::camina &&
-                 predicted == Category::conduce) {
-            FN++;
-        }
+        if(real == Category::camina && predicted == Category::camina) VP++;
+        else if(real == Category::conduce && predicted == Category::conduce) VN++;
+        else if(real == Category::conduce && predicted == Category::camina) FP++;
+        else if(real == Category::camina && predicted == Category::conduce) FN++;
+        ++evaluatedSampleCount;
+    }
+
+    if (VP + FN > 0) sensibilidad = static_cast<double>(VP) / (VP + FN);
+    if (VN + FP > 0) especificidad = static_cast<double>(VN) / (VN + FP);
+    evaluated = true;
+}
+
+void EvaluationResult::print() const {
+    if(!evaluated){
+        std::cerr<<"Evaluacion no disponible."<<std::endl;
+        return;
+    }
+    if(evaluatedSampleCount == 0){
+        std::cerr<<"No hay muestras de prueba disponibles."<<std::endl;
+        return;
     }
 
     std::cout << "\n========== MATRIZ DE CONFUSION ==========\n";
@@ -63,32 +63,26 @@ void EvaluationResult::evaluate(BayesClassifier& classifier) {
 
     std::cout << std::fixed << std::setprecision(2);
 
-    if (VP + FN > 0) {
-
-        double sensibilidad =
-            static_cast<double>(VP) / (VP + FN);
+    if (sensibilidad.has_value()) {
 
         std::cout << "\nSensibilidad: "
-                  << sensibilidad * 100 << "%";
+                  << *sensibilidad * 100 << "%";
 
         std::cout << "\nComplemento sensibilidad: "
-                  << (1.0 - sensibilidad) * 100 << "%";
+                  << (1.0 - *sensibilidad) * 100 << "%";
     }
     else {
         std::cout << "\nSensibilidad: No definida";
         std::cout << "\nComplemento sensibilidad: No definido";
     }
 
-    if (VN + FP > 0) {
-
-        double especificidad =
-            static_cast<double>(VN) / (VN + FP);
+    if (especificidad.has_value()) {
 
         std::cout << "\nEspecificidad: "
-                  << especificidad * 100 << "%";
+                  << *especificidad * 100 << "%";
 
         std::cout << "\nComplemento especificidad: "
-                  << (1.0 - especificidad) * 100 << "%";
+                  << (1.0 - *especificidad) * 100 << "%";
     }
     else {
         std::cout << "\nEspecificidad: No definida";
