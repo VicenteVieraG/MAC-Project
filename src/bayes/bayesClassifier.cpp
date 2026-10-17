@@ -1,5 +1,6 @@
 #include <bayesClassifier.hpp>
 
+#include <algorithm>
 #include <iostream>
 #include <iomanip>
 #include <vector>
@@ -23,7 +24,7 @@ void BayesClassifier::train(){
     const auto sample = std::views::take(this->dataSet.records, sampleSize);
 
     // Counting and Bin Table
-    for(auto& person : sample) this->partialFit(person);
+    for(const auto& person : sample) this->partialFit(person);
 
     #ifdef DEBUG
         std::cout
@@ -84,18 +85,10 @@ Person BayesClassifier::addPerson(const Person& person) {
 
 std::pair<BinAge, BinIncome> BayesClassifier::getBin(const std::pair<double, double> input) const {
     const auto& [age, income] = input;
-    BinAge ageBin;
-
-    if(age < 30.0) ageBin = BinAge::joven;
-    else if(age < 60.0) ageBin = BinAge::adulto;
-    else ageBin = BinAge::mayor;
-
-    BinIncome incomeBin;
-    if(income < 20000.0) incomeBin = BinIncome::muyBajo;
-    else if(income < 30000.0) incomeBin = BinIncome::bajo;
-    else if(income < 40000.0) incomeBin = BinIncome::medio;
-    else if(income < 50000.0) incomeBin = BinIncome::alto;
-    else incomeBin = BinIncome::muyAlto;
+    const auto ageBin = static_cast<BinAge>(std::upper_bound(
+        ageBinBoundaries.begin(), ageBinBoundaries.end(), age) - ageBinBoundaries.begin());
+    const auto incomeBin = static_cast<BinIncome>(std::upper_bound(
+        incomeBinBoundaries.begin(), incomeBinBoundaries.end(), income) - incomeBinBoundaries.begin());
 
     return {ageBin, incomeBin};
 }

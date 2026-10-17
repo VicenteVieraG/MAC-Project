@@ -8,6 +8,10 @@
 
 class BayesClassifier {
     public:
+        // A value on a boundary belongs to the next bin. Shared with the plots.
+        static constexpr std::array ageBinBoundaries{30.0, 60.0};
+        static constexpr std::array incomeBinBoundaries{20000.0, 30000.0, 40000.0, 50000.0};
+
         void train();
         void partialFit(const Person& person);
         Category predict(const Person& input);

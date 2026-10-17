@@ -135,6 +135,7 @@ void Bayes::drawPrediction() {
     if(ImGui::Button("Predict", ImVec2(-1.0f, 0.0f))) {
         this->predictionResult = this->bayesClassifier->predict(this->predictionInput);
         this->scatterNeedsFit = true;
+        this->decisionNeedsFit = true;
     }
     ImGui::EndDisabled();
 

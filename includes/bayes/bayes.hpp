@@ -14,6 +14,7 @@ class Bayes {
         void drawDataView();
         void drawPlotsView();
         void drawScatterPlot(float height);
+        void drawDecisionRegions(float height);
         void drawConfusionMatrix();
         void refreshEvaluation();
         void drawBinsTable(float height);
@@ -31,4 +32,6 @@ class Bayes {
         std::optional<Person> addedPerson;
         std::size_t scatterRecordCount{};
         bool scatterNeedsFit{};
+        bool decisionNeedsFit{true};
+        bool decisionShowPeople{true};
 };
