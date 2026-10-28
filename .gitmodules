@@ -1,15 +1,12 @@
 [submodule "catch2"]
 	path = tests/catch2
 	url = https://github.com/catchorg/Catch2.git
-[submodule "raylib"]
-	path = external/raylib
-	url = https://github.com/raysan5/raylib.git
 [submodule "imgui"]
 	path = external/imgui
 	url = https://github.com/ocornut/imgui.git
-[submodule "rlimgui"]
-	path = external/rlimgui
-	url = https://github.com/raylib-extras/rlImGui.git
 [submodule "implot"]
 	path = external/implot
 	url = https://github.com/epezent/implot.git
+[submodule "sdl3"]
+	path = external/sdl3
+	url = https://github.com/libsdl-org/SDL.git

@@ -1,14 +1,13 @@
 #include <iostream>
+#include <exception>
 #include <config.hpp>
 
-#include <imgui.h>
-#include <raylib.h>
-#include <rlImGui.h>
+#include <SDL3/SDL_main.h>
 
 #include <window.hpp>
 #include <appLayout.hpp>
 
-int main() {
+int main(int, char**) {
     std::cout << project_name << std::endl;
     std::cout << project_version << std::endl;
     std::cout << authors << std::endl;
@@ -17,19 +16,18 @@ int main() {
     constexpr int WIDTH = 800;
     constexpr int HEIGHT = 600;
 
-    Window window(WIDTH, HEIGHT, project_name);
-    AppLayout layout;
+    try {
+        Window window(WIDTH, HEIGHT, project_name);
+        AppLayout layout;
 
-    do {
-        BeginDrawing();
-            ClearBackground(DARKGRAY);
-
-            rlImGuiBegin();
-                layout.draw();
-            rlImGuiEnd();
-
-        EndDrawing();
-    } while(!WindowShouldClose());
+        while (window.beginFrame()) {
+            layout.draw();
+            window.endFrame();
+        }
+    } catch (const std::exception& error) {
+        std::cerr << "Application error: " << error.what() << std::endl;
+        return 1;
+    }
 
     return 0;
 }

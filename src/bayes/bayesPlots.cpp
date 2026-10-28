@@ -285,6 +285,9 @@ void Bayes::drawDecisionRegions(float height) {
             ImPlot::PlotScatterG(categoryLabels[category], [](int index, void* data) {
                 return static_cast<const ImPlotPoint*>(data)[index];
             }, points[category].data(), static_cast<int>(points[category].size()), spec);
+            // Scatter uses the outline color for its legend. Restore the category
+            // color on the same item without changing the dark point outlines.
+            ImPlot::PlotDummy(categoryLabels[category], spec);
         }
 
         bool probeHovered = false;

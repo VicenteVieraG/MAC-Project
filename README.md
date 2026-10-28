@@ -7,6 +7,35 @@ Create a new project from GitHub and use this repository as a template. You can 
 git submodule update --init --recursive
 ```
 
+## Build and run the SDL3 application
+
+The application uses the bundled SDL3 submodule for windows, input, and rendering,
+with Dear ImGui's SDL3/SDL_Renderer backends and ImPlot for the interface and plots.
+SDL is linked statically by default; no separate SDL installation is required.
+The pinned SDL revision supports `SDL_LoadPNG` (SDL 3.4+) for the window icon.
+
+Initialize the dependencies, then build with a C++23 compiler and CMake 3.28.3 or newer:
+
+```bash
+git submodule update --init --recursive
+cmake -S . -B build-sdl3 -DCMAKE_BUILD_TYPE=Debug
+cmake --build build-sdl3 --parallel
+cd build-sdl3/bin
+./MAC_Project
+```
+
+On Linux, install the development dependencies for your display system as described
+in [SDL's Linux build documentation](https://wiki.libsdl.org/SDL3/README-linux).
+For example, X11 builds use X11, Xext, Xcursor, Xi, Xfixes, Xrandr, and Xrender
+development packages; Wayland builds use Wayland, xkbcommon, EGL, and protocol
+development packages. SDL's configuration output reports which drivers are enabled.
+Optional X11 screensaver and XTest support is automatically disabled when the Xss
+or Xtst development files are unavailable, including in existing IDE build folders.
+
+Run from the executable's directory so the bundled `assets/` and `data/` are found.
+The window is resizable, pauses rendering while minimized, and closes with Escape
+or the window close button. Rendering is limited to 60 FPS, with VSync when supported.
+
 ## Features
 - Application entry point [main file](./app/main.cpp) working out of the box.
 - Catch2 tests integrated with CTest ready to start writing tests in file [tests/main.cpp](./tests/main.cpp).
