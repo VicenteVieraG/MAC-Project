@@ -1,7 +1,6 @@
 #include <iostream>
 #include <config.hpp>
 
-#include <imgui.h>
 #include <raylib.h>
 #include <rlImGui.h>
 

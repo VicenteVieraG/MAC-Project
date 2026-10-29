@@ -3,4 +3,5 @@ target_link_libraries(appLayout
     PUBLIC navBar
     PUBLIC home
     PUBLIC bayes
+    PRIVATE imgui
 )
