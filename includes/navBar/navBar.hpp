@@ -2,7 +2,8 @@
 
 enum class Screen {
     Home,
-    Bayes
+    Bayes,
+    Search
 };
 
 class NavBar {

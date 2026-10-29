@@ -18,6 +18,7 @@ void AppLayout::draw(){
         switch (navBar.getCurrentScreen()) {
             case Screen::Home: this->home.draw(); break;
             case Screen::Bayes: this->bayes.draw(); break;
+            case Screen::Search: this->search.draw(); break;
         }
     }
     ImGui::End();

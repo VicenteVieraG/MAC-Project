@@ -3,6 +3,7 @@
 #include <navBar.hpp>
 #include <home.hpp>
 #include <bayes.hpp>
+#include <search.hpp>
 
 class AppLayout {
     public:
@@ -14,4 +15,5 @@ class AppLayout {
         NavBar navBar;
         Home home;
         Bayes bayes;
+        Search search;
 };
