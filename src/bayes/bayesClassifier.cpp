@@ -12,9 +12,9 @@
 
 #include "dataSet.hpp"
 
-void BayesClassifier::train(){
+void BayesClassifier::train(std::string_view csvPath){
     this->resetCounters();
-    this->dataSet.read("data/dataset.csv");
+    this->dataSet.read(csvPath);
 
     const std::size_t sampleSize = static_cast<std::size_t>(
         std::floor(static_cast<double>(this->dataSet.records.size()) * 0.8));

@@ -3,13 +3,19 @@ if(BUILD_TESTS)
 
     if(EXISTS "${CATCH2_DIR}/CMakeLists.txt")
         add_subdirectory(${CATCH2_DIR})
-        add_executable(tests main.cpp)
+        add_executable(tests
+            main.cpp
+            ${CMAKE_CURRENT_SOURCE_DIR}/bayes-tests/bayes-tests.cpp
+        )
         target_enable_clang_tidy(tests)
         target_enable_sanitizers(tests)
         target_include_directories(tests PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
 
         if(BUILD_TESTS_WITH_MAIN)
-            target_link_libraries(tests PUBLIC Catch2::Catch2WithMain)
+            target_link_libraries(tests
+                PRIVATE Catch2::Catch2WithMain
+                PRIVATE bayes_core
+            )
         else()
             target_link_libraries(tests PUBLIC Catch2::Catch2)
         endif()

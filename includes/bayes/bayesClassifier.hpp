@@ -2,6 +2,7 @@
 
 #include <utility>
 #include <array>
+#include <string_view>
 #include <vector>
 
 #include "dataSet.hpp"
@@ -12,7 +13,7 @@ class BayesClassifier {
         static constexpr std::array ageBinBoundaries{30.0, 60.0};
         static constexpr std::array incomeBinBoundaries{20000.0, 30000.0, 40000.0, 50000.0};
 
-        void train();
+        void train(std::string_view csvPath = "data/dataset.csv");
         void partialFit(const Person& person);
         Category predict(const Person& input);
         Person addPerson(const Person& person);

@@ -2,6 +2,9 @@
 /build*/
 docs/html
 
+# Ignore testing data. It can be reproduced with the nushell scripts
+/tests/data/bayes/dataset*.csv
+
 # Ignore Visual Studio Code settings
 .vscode
 
