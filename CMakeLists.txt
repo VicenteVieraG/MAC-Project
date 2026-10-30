@@ -9,7 +9,7 @@ project(MAC_Project VERSION 0.2.17 LANGUAGES C CXX)
 set(AUTHORS "Vicente Viera | Hugo Jirano")
 
 # Configure build options
-set(CMAKE_CXX_STANDARD 23)
+set(CMAKE_CXX_STANDARD 26)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
@@ -27,11 +27,11 @@ set_property(CACHE SANITIZER_PRESET PROPERTY STRINGS default debug thread memory
 # Options
 option(BUILD_TESTS "Build Catch2 unit tests." OFF)
 option(BUILD_TESTS_WITH_MAIN "Build Catch2 Tests with custom main function." ON)
-option(ENABLE_WARNINGS "Enable compiler warnings." OFF)
+option(ENABLE_WARNINGS "Enable compiler warnings." ON)
 option(ENABLE_WARNINGS_AS_ERRORS "Enable compiler warnings as errors." OFF)
 option(ENABLE_CLANG_TIDY "Enable clang-tidy static analysis." OFF)
 option(ENABLE_SANITIZERS "Enable sanitizer helpers for targets." OFF)
-option(ENABLE_LTO_GLOBALY "Enable LTO/IPO globally for Release and RelWithDebInfo targets." OFF)
+option(ENABLE_LTO_GLOBALY "Enable LTO/IPO globally for Release and RelWithDebInfo targets." ON)
 
 # Modules include
 include(LTO)
