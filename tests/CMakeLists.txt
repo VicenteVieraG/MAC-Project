@@ -16,6 +16,9 @@ if(BUILD_TESTS)
                 PRIVATE Catch2::Catch2WithMain
                 PRIVATE bayes_core
             )
+            target_compile_definitions(tests PRIVATE
+                BAYES_TEST_DATA_DIR="${CMAKE_CURRENT_SOURCE_DIR}/data/bayes"
+            )
         else()
             target_link_libraries(tests PUBLIC Catch2::Catch2)
         endif()
