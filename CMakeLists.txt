@@ -5,7 +5,7 @@ cmake_minimum_required(VERSION 3.28.3)
 
 # Project name, version and languages
 #! Change the project name and version here
-project(MAC_Project VERSION 0.2.17 LANGUAGES C CXX)
+project(MAC_Project VERSION 0.2.18 LANGUAGES C CXX)
 set(AUTHORS "Vicente Viera | Hugo Jirano")
 
 # Configure build options

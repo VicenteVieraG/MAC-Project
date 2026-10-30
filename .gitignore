@@ -2,6 +2,9 @@
 /build*/
 docs/html
 
+# Ignore reproducible data files
+/data/searchGraphs/*
+
 # Ignore testing data. It can be reproduced with the nushell scripts
 /tests/data/bayes/dataset*.csv
 

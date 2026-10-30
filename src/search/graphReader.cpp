@@ -12,6 +12,11 @@
 #include <utility>
 
 namespace {
+    /**
+     * @brief Remove leading and trailing ASCII whitespace from a view.
+     * @param text Text to trim without modifying its backing storage.
+     * @return View of the trimmed text, or an empty view if no content remains.
+     */
     std::string_view trim(std::string_view text) {
         constexpr std::string_view whitespace = " \t\r\n\f\v";
         const auto first = text.find_first_not_of(whitespace);
@@ -20,6 +25,15 @@ namespace {
         return text.substr(first, last - first + 1);
     }
 
+    /**
+     * @brief Parse a finite numeric weight or uppercase `INF`.
+     * @param token Weight text, optionally surrounded by whitespace.
+     * @param line One-based input line number used in error messages.
+     * @param column One-based matrix column used in error messages.
+     * @return Parsed finite weight, or positive infinity for `INF`.
+     * @throws std::invalid_argument If the token is empty, malformed, outside
+     *         the representable range, or nonfinite other than `INF`.
+     */
     double parseWeight(std::string_view token, std::size_t line, std::size_t column) {
         token = trim(token);
         if(token == "INF") return std::numeric_limits<double>::infinity();
@@ -46,6 +60,14 @@ namespace {
         return weight;
     }
 
+    /**
+     * @brief Parse a pipe-delimited row of comma-separated weights.
+     * @param row Row text with surrounding whitespace already removed.
+     * @param line One-based input line number used in error messages.
+     * @return Parsed weights in their original column order.
+     * @throws std::invalid_argument If enclosing pipes are missing or a weight
+     *         is invalid, including empty values between delimiters.
+     */
     std::vector<double> parseRow(std::string_view row, std::size_t line) {
         if(row.size() < 2 || row.front() != '|' || row.back() != '|') {
             throw std::invalid_argument(
