@@ -1,13 +1,14 @@
 #pragma once
 
 #include <heap.hpp>
+#include <heuristics.hpp>
 
 #include <limits>
 #include <optional>
 #include <vector>
 
 /**
- * @brief Dijkstra shortest-path search with optional snapshots for playback.
+ * @brief Dijkstra or A* shortest-path search with optional snapshots for playback.
  *
  * Each instance owns its input matrix and latest successful run. The graph is
  * directed: matrix[u][v] is the cost from u to v. Positive infinity means no
@@ -27,8 +28,10 @@ class Dijkstra {
             /// Default-initialized IDs; meaningful only for discovered nodes other than start.
             std::vector<NodeId> predecessors;
             std::vector<bool> visited;
-            /// Frontier priorities are the corresponding entries in distances.
+            /// Nodes currently queued in the frontier.
             std::vector<bool> inFrontier;
+            /// Estimated total costs f = g + h; infinity for undiscovered nodes.
+            std::vector<double> priorities;
         };
 
         struct SearchResult {
@@ -40,6 +43,8 @@ class Dijkstra {
             std::size_t exploredNodes = 0;
             /// Initial state followed by one snapshot per popped node.
             std::vector<SearchStep> steps;
+            /// Fixed remaining-cost estimates h, indexed by node ID (zero for Dijkstra).
+            std::vector<double> heuristics;
         };
 
         /**
@@ -51,10 +56,27 @@ class Dijkstra {
         Dijkstra(Matrix graph, NodeId start, NodeId goal);
 
         /**
-         * @brief Run ordinary Dijkstra to completion, replacing the previous result.
+         * @brief Use the same search loop with geometric A* priorities g + h.
+         * @param positions One finite map position per node, indexed by node ID.
+         * @param heuristic None, Manhattan, or Euclidean.
+         * @throws std::invalid_argument For invalid geometry/type or estimates
+         *         that fail h(u) <= weight(u,v) + h(v) on any finite directed edge.
+         * @throws std::overflow_error If an estimate exceeds the finite double range.
+         * @note Consistency is checked using double arithmetic. Together with h(goal)=0,
+         *       it permits permanently closing popped nodes, as in ordinary Dijkstra.
+         *       The ordinary constructor's graph and endpoint validation still applies.
+         *       Grid supplies four-direction connections with cost 1, for which both
+         *       Manhattan and Euclidean can be used directly.
+         */
+        Dijkstra(Matrix graph, NodeId start, NodeId goal,
+                 const std::vector<Heuristics::Position>& positions,
+                 Heuristics::Type heuristic);
+
+        /**
+         * @brief Run the selected search to completion, replacing the previous result.
          * @param recordSteps Save independent snapshots when true (the default).
          * @return The stored result; valid until the next successful run or destruction.
-         * @throws std::overflow_error If a considered finite path cost overflows.
+         * @throws std::overflow_error If a considered path cost or frontier priority overflows.
          * @note Repeated runs start fresh. A failed run preserves the previous result.
          *       Without recording, steps is empty. The goal is accepted only when
          *       popped, and its outgoing edges are not expanded. Equal-cost routes
@@ -69,5 +91,6 @@ class Dijkstra {
         Matrix graph;
         NodeId start{};
         NodeId goal{};
+        std::vector<double> estimates;
         std::optional<SearchResult> lastResult;
 };

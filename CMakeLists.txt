@@ -5,7 +5,7 @@ cmake_minimum_required(VERSION 3.28.3)
 
 # Project name, version and languages
 #! Change the project name and version here
-project(MAC_Project VERSION 0.2.19 LANGUAGES C CXX)
+project(MAC_Project VERSION 0.2.20 LANGUAGES C CXX)
 set(AUTHORS "Vicente Viera | Hugo Jirano")
 
 # Configure build options
@@ -25,7 +25,7 @@ set(SANITIZER_PRESET "default" CACHE STRING "Default sanitizer preset used by sa
 set_property(CACHE SANITIZER_PRESET PROPERTY STRINGS default debug thread memory leak)
 
 # Options
-option(BUILD_TESTS "Build Catch2 unit tests." OFF)
+option(BUILD_TESTS "Build Catch2 unit tests." ON)
 option(BUILD_TESTS_WITH_MAIN "Build Catch2 Tests with custom main function." ON)
 option(ENABLE_WARNINGS "Enable compiler warnings." ON)
 option(ENABLE_WARNINGS_AS_ERRORS "Enable compiler warnings as errors." OFF)

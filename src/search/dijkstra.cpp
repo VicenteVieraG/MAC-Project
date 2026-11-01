@@ -19,22 +19,46 @@ Dijkstra::Dijkstra(Matrix graph, NodeId start, NodeId goal): graph(std::move(gra
     }
 
     if(start >= count || goal >= count) throw std::out_of_range("Dijkstra start and goal must be valid node IDs.");
+    this->estimates.assign(count, 0.0);
+}
+
+Dijkstra::Dijkstra(Matrix graph, NodeId start, NodeId goal, const std::vector<Heuristics::Position>& positions, Heuristics::Type heuristic)
+    : Dijkstra(std::move(graph), start, goal) {
+    const auto count = this->graph.size();
+    if(positions.size() != count)
+        throw std::invalid_argument("Search requires one map position per node.");
+
+    for(NodeId node = 0; node < count; ++node)
+        this->estimates[node] = Heuristics::estimate(heuristic, positions[node], positions[goal]);
+
+    // A consistent heuristic makes the existing closed-set policy safe. Reject
+    // incompatible weights (e.g. cheap diagonals with raw Manhattan distance).
+    for(NodeId from = 0; from < count; ++from) {
+        for(NodeId to = 0; to < count; ++to) {
+            const auto weight = this->graph[from][to];
+            if(std::isfinite(weight) && this->estimates[from] > weight + this->estimates[to])
+                throw std::invalid_argument("Heuristic is inconsistent with the graph's edge costs; use None for this graph.");
+        }
+    }
 }
 
 const Dijkstra::SearchResult& Dijkstra::run(bool recordSteps) {
     const auto count = this->graph.size();
     SearchResult nextResult;
+    nextResult.heuristics = this->estimates;
     SearchStep state{
         this->start,
         std::vector<double>(count, std::numeric_limits<double>::infinity()),
         std::vector<NodeId>(count, NodeId{}),
         std::vector<bool>(count, false),
-        std::vector<bool>(count, false)
+        std::vector<bool>(count, false),
+        std::vector<double>(count, std::numeric_limits<double>::infinity())
     };
     Heap frontier;
     state.distances[this->start] = 0.0;
     state.inFrontier[this->start] = true;
-    frontier.push(this->start, 0.0);
+    state.priorities[this->start] = this->estimates[this->start];
+    frontier.push(this->start, state.priorities[this->start]);
     if(recordSteps) nextResult.steps.push_back(state);
 
     while(!frontier.empty()) {
@@ -68,13 +92,18 @@ const Dijkstra::SearchResult& Dijkstra::run(bool recordSteps) {
                 throw std::overflow_error("Dijkstra path cost exceeds the finite double range.");
             if(candidate >= state.distances[neighbor]) continue;
 
-            // Relax the edge; keep only one heap entry for each frontier node.
+            const auto priority = candidate + this->estimates[neighbor];
+            if(!std::isfinite(priority))
+                throw std::overflow_error("Search frontier priority exceeds the finite double range.");
+
+            // Compare real costs g, but order the frontier by estimated totals f.
             state.distances[neighbor] = candidate;
+            state.priorities[neighbor] = priority;
             state.predecessors[neighbor] = current;
             if(frontier.contains(neighbor)) {
-                frontier.decreaseKey(neighbor, candidate);
+                frontier.decreaseKey(neighbor, priority);
             } else {
-                frontier.push(neighbor, candidate);
+                frontier.push(neighbor, priority);
                 state.inFrontier[neighbor] = true;
             }
         }

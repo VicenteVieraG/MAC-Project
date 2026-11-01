@@ -1,5 +1,6 @@
 add_library(search_core STATIC
     graph.cpp
+    grid.cpp
     dijkstra.cpp
     heuristics.cpp
     heap.cpp
