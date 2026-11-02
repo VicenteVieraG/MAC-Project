@@ -10,6 +10,7 @@ if(BUILD_TESTS)
             ${CMAKE_CURRENT_SOURCE_DIR}/search-tests/dijkstra-tests.cpp
             ${CMAKE_CURRENT_SOURCE_DIR}/search-tests/heuristics-tests.cpp
             ${CMAKE_CURRENT_SOURCE_DIR}/search-tests/grid-tests.cpp
+            ${CMAKE_CURRENT_SOURCE_DIR}/search-tests/grid-playback-tests.cpp
         )
         target_enable_clang_tidy(tests)
         target_enable_sanitizers(tests)

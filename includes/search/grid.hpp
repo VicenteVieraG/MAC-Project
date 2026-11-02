@@ -3,12 +3,13 @@
 #include <heuristics.hpp>
 
 #include <cstddef>
+#include <array>
 #include <vector>
 
 /**
- * @brief A square map with unit-cost moves up, down, left, and right.
+ * @brief A compact map with unit-cost moves up, down, left, and right.
  *
- * Node IDs are row * sideLength + column. Obstacles retain their IDs and positions
+ * Node IDs are row * columns() + column. Obstacles retain their IDs and positions
  * but have no movement edges. There are no diagonal edges or configurable costs.
  * Edit obstacles through setBlocked(); its matrix and positions are read-only.
  */
@@ -24,6 +25,16 @@ class Grid {
          */
         explicit Grid(std::size_t sideLength);
 
+        /// Exactly count cells in near-square rows, possibly with a partial last row.
+        /// Throws std::invalid_argument for zero cells.
+        [[nodiscard]] static Grid fromCellCount(std::size_t count);
+        [[nodiscard]] std::size_t size() const noexcept { return this->obstacles.size(); }
+        [[nodiscard]] std::size_t rows() const noexcept { return this->rowCount; }
+        [[nodiscard]] std::size_t columns() const noexcept { return this->columnCount; }
+        [[nodiscard]] bool isBlocked(std::size_t node) const;
+        /// Open orthogonal neighbors in node-ID order; absent entries equal size().
+        [[nodiscard]] std::array<std::size_t, 4> neighbors(std::size_t node) const;
+
         /**
          * @brief Block or unblock a node, updating its movement edges in both directions.
          * @note Unblocking restores only connections to unblocked orthogonal neighbors.
@@ -31,8 +42,9 @@ class Grid {
          */
         void setBlocked(std::size_t node, bool blocked = true);
 
-        /// Unit-cost movement edges, zero diagonal, and positive infinity elsewhere.
-        [[nodiscard]] const Matrix& matrix() const noexcept { return this->weights; }
+        /// Lazy compatibility matrix: unit edges, zero diagonal, infinity elsewhere.
+        /// Costs O(size() squared) memory; visualization uses neighbors() instead.
+        [[nodiscard]] const Matrix& matrix() const;
 
         /// Map coordinates indexed by node ID, independent of screen placement.
         [[nodiscard]] const std::vector<Heuristics::Position>& positions() const noexcept {
@@ -43,8 +55,10 @@ class Grid {
         [[nodiscard]] std::size_t nodeId(std::size_t row, std::size_t column) const;
 
     private:
-        std::size_t sideLength;
-        Matrix weights;
+        Grid(std::size_t count, std::size_t columns);
+        std::size_t rowCount;
+        std::size_t columnCount;
+        mutable Matrix weights;
         std::vector<Heuristics::Position> coordinates;
         std::vector<bool> obstacles;
 };

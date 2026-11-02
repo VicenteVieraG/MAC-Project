@@ -8,14 +8,13 @@ void Search::draw() {
     ImGui::Spacing();
 
     if(ImGui::BeginTabBar("SearchViews")) {
+        if(ImGui::BeginTabItem("Grid")) {
+            this->gridView.draw();
+            ImGui::EndTabItem();
+        }
         if(ImGui::BeginTabItem("Graph")) {
             ImGui::TextWrapped("Load a weighted graph and follow the search step by step.");
             ImGui::TextDisabled("Graph loading and visualization are not available yet.");
-            ImGui::EndTabItem();
-        }
-        if(ImGui::BeginTabItem("Grid Editor")) {
-            ImGui::TextWrapped("Design a map with obstacles, a starting point, and a goal.");
-            ImGui::TextDisabled("Map editing is not available yet.");
             ImGui::EndTabItem();
         }
         if(ImGui::BeginTabItem("Comparison")) {
