@@ -7,9 +7,10 @@ add_library(search_core STATIC
     heuristics.cpp
     heap.cpp
     graphReader.cpp
+    searchBenchmark.cpp
 )
 
-add_library(search STATIC search.cpp gridView.cpp graphView.cpp)
+add_library(search STATIC search.cpp gridView.cpp graphView.cpp benchmarkView.cpp)
 target_link_libraries(search
     PUBLIC search_core
     PRIVATE imgui raylib

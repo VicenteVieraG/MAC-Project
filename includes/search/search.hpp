@@ -2,6 +2,7 @@
 
 #include <gridView.hpp>
 #include <graphView.hpp>
+#include <benchmarkView.hpp>
 
 class Search {
     public:
@@ -9,4 +10,5 @@ class Search {
     private:
         GridView gridView;
         GraphView graphView;
+        BenchmarkView benchmarkView;
 };

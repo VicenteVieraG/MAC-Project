@@ -2,6 +2,8 @@
 
 To load and explore a file in the app, see the
 [graph visualization guide](graph-visualization.md).
+To compare search execution times without playback, see the
+[benchmarking guide](benchmarking.md).
 
 `GraphReader` reads a square adjacency matrix from a file or an input stream:
 

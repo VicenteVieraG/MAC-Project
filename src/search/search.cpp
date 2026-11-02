@@ -16,9 +16,8 @@ void Search::draw() {
             this->graphView.draw();
             ImGui::EndTabItem();
         }
-        if(ImGui::BeginTabItem("Comparison")) {
-            ImGui::TextWrapped("Compare Dijkstra with Manhattan and Euclidean A* search on the same map.");
-            ImGui::TextDisabled("Search results and comparisons are not available yet.");
+        if(ImGui::BeginTabItem("Benchmarking")) {
+            this->benchmarkView.draw();
             ImGui::EndTabItem();
         }
         ImGui::EndTabBar();

@@ -12,6 +12,7 @@ if(BUILD_TESTS)
             ${CMAKE_CURRENT_SOURCE_DIR}/search-tests/grid-tests.cpp
             ${CMAKE_CURRENT_SOURCE_DIR}/search-tests/grid-playback-tests.cpp
             ${CMAKE_CURRENT_SOURCE_DIR}/search-tests/graph-playback-tests.cpp
+            ${CMAKE_CURRENT_SOURCE_DIR}/search-tests/benchmark-tests.cpp
         )
         target_enable_clang_tidy(tests)
         target_enable_sanitizers(tests)
