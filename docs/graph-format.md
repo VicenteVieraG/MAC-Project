@@ -1,5 +1,8 @@
 # Graph input format
 
+To load and explore a file in the app, see the
+[graph visualization guide](graph-visualization.md).
+
 `GraphReader` reads a square adjacency matrix from a file or an input stream:
 
 ```text

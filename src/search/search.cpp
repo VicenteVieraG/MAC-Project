@@ -13,8 +13,7 @@ void Search::draw() {
             ImGui::EndTabItem();
         }
         if(ImGui::BeginTabItem("Graph")) {
-            ImGui::TextWrapped("Load a weighted graph and follow the search step by step.");
-            ImGui::TextDisabled("Graph loading and visualization are not available yet.");
+            this->graphView.draw();
             ImGui::EndTabItem();
         }
         if(ImGui::BeginTabItem("Comparison")) {
