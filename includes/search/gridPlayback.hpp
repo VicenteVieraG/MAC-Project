@@ -33,6 +33,10 @@ class GridPlayback {
         bool setGoal(std::size_t node);
         bool setHeuristic(Heuristics::Type type);
         bool clearObstacles();
+        /// Replace obstacles with a solvable random maze, keeping endpoints and settings.
+        bool generateMaze();
+        /// Seeded variant for reproducible maps; also disabled while playing.
+        bool generateMaze(std::uint32_t seed);
 
         [[nodiscard]] const Grid& grid() const noexcept { return this->map; }
         [[nodiscard]] std::size_t start() const noexcept { return this->startNode; }

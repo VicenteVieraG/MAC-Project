@@ -87,6 +87,8 @@ TEST_CASE("Grid playback locks every edit while playing and resets after a pause
     REQUIRE_FALSE(playback.setGoal(4));
     REQUIRE_FALSE(playback.setHeuristic(Heuristics::Type::None));
     REQUIRE_FALSE(playback.clearObstacles());
+    REQUIRE_FALSE(playback.generateMaze(1234));
+    REQUIRE_FALSE(playback.generateMaze());
     REQUIRE(playback.revision() == revision);
     REQUIRE(playback.grid().isBlocked(7));
     playback.setSpeed(40.0f);
@@ -180,6 +182,128 @@ TEST_CASE("Grid sizes preserve exact cell counts and partial-row boundaries", "[
     REQUIRE(playback.resize(30));
     REQUIRE(playback.grid().size() == 30);
     REQUIRE(playback.goal() == 29);
+}
+
+TEST_CASE("Maze generation clears completed or rewound search history while preserving setup", "[search][grid][playback][maze]") {
+    bool rewind = false;
+    SECTION("Regenerate after completion") {}
+    SECTION("Regenerate after rewinding a completed search") { rewind = true; }
+    for(const auto type : {Heuristics::Type::None, Heuristics::Type::Manhattan, Heuristics::Type::Euclidean}) {
+        // Both endpoints lie between maze rooms; the goal is in the partial last row.
+        GridPlayback playback(47);
+        REQUIRE(playback.setStart(8));
+        REQUIRE(playback.setGoal(43));
+        playback.setHeuristic(type);
+        playback.setSpeed(125.0f);
+        playback.setBlocked(14, true);
+        for(std::size_t step = 0; step < playback.grid().size() && !playback.finished(); ++step)
+            REQUIRE(playback.next());
+        REQUIRE(playback.found());
+        REQUIRE_FALSE(playback.path().empty());
+
+        if(rewind) {
+            REQUIRE(playback.previous());
+            REQUIRE(playback.previous());
+            REQUIRE_FALSE(playback.finished());
+        }
+
+        const auto revision = playback.revision();
+        REQUIRE(playback.generateMaze(984));
+        REQUIRE(playback.grid().size() == 47);
+        REQUIRE(playback.grid().columns() == 7);
+        REQUIRE(playback.grid().rows() == 7);
+        REQUIRE(playback.start() == 8);
+        REQUIRE(playback.goal() == 43);
+        REQUIRE(playback.heuristic() == type);
+        REQUIRE(playback.speed() == 125.0f);
+        REQUIRE(playback.revision() > revision);
+        REQUIRE_FALSE(playback.isPlaying());
+        REQUIRE_FALSE(playback.finished());
+        REQUIRE_FALSE(playback.found());
+        REQUIRE(playback.step() == 0);
+        REQUIRE(playback.current() == playback.start());
+        REQUIRE(playback.path().empty());
+        REQUIRE_FALSE(playback.previous());
+        REQUIRE_FALSE(playback.grid().isBlocked(playback.start()));
+        REQUIRE_FALSE(playback.grid().isBlocked(playback.goal()));
+        for(std::size_t node = 0; node < playback.grid().size(); ++node) {
+            REQUIRE(playback.state(node) == (node == playback.start()
+                ? GridPlayback::CellState::Frontier : GridPlayback::CellState::Unseen));
+            REQUIRE(playback.distance(node) == (node == playback.start()
+                ? 0.0 : std::numeric_limits<double>::infinity()));
+            REQUIRE_FALSE(playback.onPath(node));
+        }
+
+        // A fresh reference search detects stale playback changes or an unreachable endpoint.
+        Dijkstra reference(playback.grid().matrix(), playback.start(), playback.goal(), playback.grid().positions(), type);
+        const auto& expected = reference.run();
+        REQUIRE(expected.found);
+        for(std::size_t step = 1; step < expected.steps.size(); ++step) {
+            REQUIRE(playback.next());
+            requireSnapshot(playback, expected.steps[step]);
+        }
+        REQUIRE(playback.found());
+        REQUIRE(playback.path() == expected.path);
+        REQUIRE_FALSE(playback.next());
+    }
+}
+
+TEST_CASE("Seeded maze generation replaces prior obstacles reproducibly", "[search][grid][playback][maze]") {
+    GridPlayback playback(81);
+    REQUIRE(playback.setStart(10));
+    REQUIRE(playback.setGoal(79));
+    REQUIRE(playback.generateMaze(777));
+    std::vector<bool> expected;
+    for(std::size_t node = 0; node < playback.grid().size(); ++node)
+        expected.push_back(playback.grid().isBlocked(node));
+
+    for(std::size_t node = 0; node < playback.grid().size(); ++node)
+        playback.setBlocked(node, !expected[node]);
+    REQUIRE(playback.generateMaze(777));
+    for(std::size_t node = 0; node < playback.grid().size(); ++node)
+        REQUIRE(playback.grid().isBlocked(node) == expected[node]);
+
+    // The UI's unseeded entry point must also produce a searchable map.
+    REQUIRE(playback.generateMaze());
+    for(std::size_t step = 0; step < playback.grid().size() && !playback.finished(); ++step)
+        REQUIRE(playback.next());
+    REQUIRE(playback.found());
+    REQUIRE(playback.path().front() == 10);
+    REQUIRE(playback.path().back() == 79);
+}
+
+TEST_CASE("Maze generation leaves an active search unchanged", "[search][grid][playback][maze]") {
+    GridPlayback playback(100);
+    REQUIRE(playback.generateMaze(2345));
+    playback.setSpeed(16.0f);
+    playback.play();
+    playback.update(0.125);
+    REQUIRE(playback.isPlaying());
+    REQUIRE(playback.step() == 2);
+
+    const auto revision = playback.revision();
+    const auto current = playback.current();
+    std::vector<bool> obstacles;
+    std::vector<double> distances;
+    std::vector<GridPlayback::CellState> states;
+    for(std::size_t node = 0; node < playback.grid().size(); ++node) {
+        obstacles.push_back(playback.grid().isBlocked(node));
+        distances.push_back(playback.distance(node));
+        states.push_back(playback.state(node));
+    }
+    REQUIRE_FALSE(playback.generateMaze(9876));
+    REQUIRE_FALSE(playback.generateMaze());
+    REQUIRE(playback.isPlaying());
+    REQUIRE(playback.step() == 2);
+    REQUIRE(playback.current() == current);
+    REQUIRE(playback.revision() == revision);
+    for(std::size_t node = 0; node < playback.grid().size(); ++node) {
+        REQUIRE(playback.grid().isBlocked(node) == obstacles[node]);
+        REQUIRE(playback.distance(node) == distances[node]);
+        REQUIRE(playback.state(node) == states[node]);
+    }
+    playback.update(0.125);
+    REQUIRE(playback.step() == 4);
 }
 
 TEST_CASE("Million-cell grid completes with compact search history", "[search][grid][playback][scale]") {

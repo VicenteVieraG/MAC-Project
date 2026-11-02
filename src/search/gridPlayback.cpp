@@ -2,6 +2,7 @@
 
 #include <algorithm>
 #include <cmath>
+#include <random>
 #include <stdexcept>
 
 namespace {
@@ -180,6 +181,18 @@ bool GridPlayback::clearObstacles() {
     if(this->playing) return false;
     for(std::size_t node = 0; node < this->map.size(); ++node)
         if(this->map.isBlocked(node)) this->map.setBlocked(node, false);
+    this->restart();
+    return true;
+}
+
+bool GridPlayback::generateMaze() {
+    if(this->playing) return false;
+    return this->generateMaze(std::random_device{}());
+}
+
+bool GridPlayback::generateMaze(std::uint32_t seed) {
+    if(this->playing) return false;
+    this->map.generateMaze(this->startNode, this->goalNode, seed);
     this->restart();
     return true;
 }

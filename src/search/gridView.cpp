@@ -122,6 +122,10 @@ void GridView::drawSidebar() {
     ImGui::TextUnformatted("Paint tool");
     ImGui::SetNextItemWidth(-1);
     ImGui::Combo("##paintTool", &this->editTool, tools, 4);
+    if(ImGui::Button("Generate maze", ImVec2(-1, 0))) {
+        if(this->playback.generateMaze()) this->lastPainted.reset();
+    }
+    ImGui::SetItemTooltip("Replace obstacles with a random maze. Keeps start and goal connected and resets the search.");
     if(ImGui::Button("Clear obstacles", ImVec2(-1, 0))) this->playback.clearObstacles();
     ImGui::EndDisabled();
 

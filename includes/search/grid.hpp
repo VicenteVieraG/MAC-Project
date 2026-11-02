@@ -3,6 +3,7 @@
 #include <heuristics.hpp>
 
 #include <cstddef>
+#include <cstdint>
 #include <array>
 #include <vector>
 
@@ -41,6 +42,11 @@ class Grid {
          * @throws std::out_of_range If node is outside the grid.
          */
         void setBlocked(std::size_t node, bool blocked = true);
+
+        /// Replace obstacles with a seeded random maze, keeping both endpoints open
+        /// and connected. Uses iterative carving with O(size()) time and storage.
+        /// Throws std::out_of_range for an invalid endpoint before changing the map.
+        void generateMaze(std::size_t start, std::size_t goal, std::uint32_t seed);
 
         /// Lazy compatibility matrix: unit edges, zero diagonal, infinity elsewhere.
         /// Costs O(size() squared) memory; visualization uses neighbors() instead.

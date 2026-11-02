@@ -2,6 +2,7 @@
 
 #include <cmath>
 #include <limits>
+#include <random>
 #include <stdexcept>
 #include <utility>
 
@@ -78,6 +79,63 @@ void Grid::setBlocked(std::size_t node, bool blocked) {
     if(this->columnCount < this->size() - node) update(node + this->columnCount);
     if(column > 0) update(node - 1);
     if(column + 1 < this->columnCount && node + 1 < this->size()) update(node + 1);
+}
+
+void Grid::generateMaze(std::size_t start, std::size_t goal, std::uint32_t seed) {
+    if(start >= this->size() || goal >= this->size())
+        throw std::out_of_range("Maze endpoints must be inside the map.");
+
+    // Even rows and columns hold rooms; the intervening cells hold walls.
+    // Build separately so allocation failures cannot leave a half-carved map.
+    std::vector<bool> blocked(this->size(), true);
+    std::vector<std::size_t> pending{0};
+    blocked[0] = false;
+    std::mt19937 random(seed);
+    const auto columns = this->columnCount;
+    struct Passage { std::size_t room; std::size_t wall; };
+    while(!pending.empty()) {
+        const auto node = pending.back();
+        const auto row = node / columns;
+        const auto column = node % columns;
+        std::array<Passage, 4> candidates{};
+        std::size_t count = 0;
+        const auto add = [&](std::size_t room, std::size_t wall) {
+            if(blocked[room]) candidates[count++] = {room, wall};
+        };
+        if(row >= 2) add(node - 2 * columns, node - columns);
+        if(column >= 2) add(node - 2, node - 1);
+        if(columns - column > 2 && this->size() - node > 2) add(node + 2, node + 1);
+        // Count actual cells, including a potentially incomplete final row.
+        if(columns <= (this->size() - 1 - node) / 2) add(node + 2 * columns, node + columns);
+        if(count == 0) {
+            pending.pop_back();
+            continue;
+        }
+        const auto passage = candidates[std::uniform_int_distribution<std::size_t>(0, count - 1)(random)];
+        blocked[passage.wall] = false;
+        blocked[passage.room] = false;
+        pending.push_back(passage.room);
+    }
+
+    // A custom endpoint can lie on a wall or an even-sized grid's outer edge.
+    // Moving up, then left, reaches a carved room in at most two moves and
+    // never enters a missing cell of the final row.
+    const auto connect = [&](std::size_t node) {
+        if(!blocked[node]) return;
+        blocked[node] = false;
+        if((node / columns) % 2 != 0) {
+            node -= columns;
+            blocked[node] = false;
+        }
+        if((node % columns) % 2 != 0) blocked[node - 1] = false;
+    };
+    connect(start);
+    connect(goal);
+
+    // Keep any previously materialized compatibility matrix and its references
+    // valid without allocating one for the visualization.
+    for(std::size_t node = 0; node < this->size(); ++node)
+        this->setBlocked(node, blocked[node]);
 }
 
 std::size_t Grid::nodeId(std::size_t row, std::size_t column) const {

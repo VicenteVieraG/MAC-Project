@@ -9,6 +9,26 @@
 
 namespace {
     constexpr double inf = std::numeric_limits<double>::infinity();
+
+    std::vector<bool> obstacleMask(const Grid& grid) {
+        std::vector<bool> result(grid.size());
+        for(std::size_t node = 0; node < grid.size(); ++node) result[node] = grid.isBlocked(node);
+        return result;
+    }
+
+    std::vector<bool> reachableCells(const Grid& grid, std::size_t start) {
+        std::vector<bool> reached(grid.size(), false);
+        std::vector<std::size_t> pending{start};
+        reached[start] = true;
+        for(std::size_t index = 0; index < pending.size(); ++index) {
+            for(const auto neighbor : grid.neighbors(pending[index])) {
+                if(neighbor == grid.size() || reached[neighbor]) continue;
+                reached[neighbor] = true;
+                pending.push_back(neighbor);
+            }
+        }
+        return reached;
+    }
 }
 
 TEST_CASE("Grid side length creates a square with only four-direction unit-cost edges", "[search][grid]") {
@@ -141,4 +161,109 @@ TEST_CASE("Grid searches agree on unit-cost obstacle detours", "[search][grid]")
         REQUIRE(result.totalCost == expected.totalCost);
         REQUIRE(result.totalCost == static_cast<double>(result.path.size() - 1));
     }
+}
+
+TEST_CASE("Random mazes connect custom endpoints and every open cell across grid shapes", "[search][grid][maze]") {
+    // Consecutive counts cover odd/even dimensions, partial last rows, and tiny maps.
+    for(std::size_t count = 1; count <= 100; ++count) {
+        for(const std::uint32_t seed : {0, 1, 42}) {
+            for(const auto start : {std::size_t{0}, count / 2, count - 1}) {
+                const auto goal = (start + count / 2) % count;
+                CAPTURE(count, seed, start, goal);
+                auto grid = Grid::fromCellCount(count);
+                const auto rows = grid.rows(), columns = grid.columns();
+                for(std::size_t node = 0; node < count; ++node) grid.setBlocked(node);
+                grid.generateMaze(start, goal, seed);
+                REQUIRE(grid.size() == count);
+                REQUIRE(grid.rows() == rows);
+                REQUIRE(grid.columns() == columns);
+                REQUIRE_FALSE(grid.isBlocked(start));
+                REQUIRE_FALSE(grid.isBlocked(goal));
+                const auto reached = reachableCells(grid, start);
+                REQUIRE(reached[goal]);
+                for(std::size_t node = 0; node < count; ++node) {
+                    REQUIRE(reached[node] == !grid.isBlocked(node));
+                    REQUIRE(grid.positions()[node].row == static_cast<double>(node / columns));
+                    REQUIRE(grid.positions()[node].column == static_cast<double>(node % columns));
+                }
+                if(count >= 30) REQUIRE(std::count(reached.begin(), reached.end(), false) > 0);
+            }
+        }
+    }
+}
+
+TEST_CASE("Random mazes reproduce a seed and replace earlier obstacles", "[search][grid][maze]") {
+    auto grid = Grid::fromCellCount(95);
+    grid.generateMaze(7, 94, 123);
+    const auto first = obstacleMask(grid);
+    for(std::size_t node = 0; node < grid.size(); ++node) grid.setBlocked(node, false);
+    grid.generateMaze(7, 94, 123);
+    REQUIRE(obstacleMask(grid) == first);
+    grid.generateMaze(7, 94, 456);
+    REQUIRE(obstacleMask(grid) != first);
+}
+
+TEST_CASE("Random maze corridors form a connected tree before endpoint extensions", "[search][grid][maze]") {
+    Grid grid(21);
+    grid.generateMaze(0, grid.size() - 1, 987);
+    const auto reached = reachableCells(grid, 0);
+    std::size_t openCells = 0, directedEdges = 0;
+    for(std::size_t node = 0; node < grid.size(); ++node) {
+        if(grid.isBlocked(node)) continue;
+        REQUIRE(reached[node]);
+        ++openCells;
+        for(const auto neighbor : grid.neighbors(node))
+            if(neighbor != grid.size()) ++directedEdges;
+    }
+    REQUIRE(openCells > grid.size() / 3);
+    REQUIRE(openCells < grid.size() * 2 / 3);
+    REQUIRE(directedEdges == 2 * (openCells - 1));
+}
+
+TEST_CASE("Random maze generation updates an existing compatibility matrix in place", "[search][grid][maze]") {
+    Grid grid(5);
+    const auto& matrix = grid.matrix();
+    const auto* firstRow = matrix.front().data();
+    grid.generateMaze(6, 24, 10);
+    REQUIRE(&matrix == &grid.matrix());
+    REQUIRE(matrix.front().data() == firstRow);
+    for(std::size_t from = 0; from < grid.size(); ++from) {
+        for(std::size_t to = 0; to < grid.size(); ++to) {
+            const auto rowDistance = std::max(from / grid.columns(), to / grid.columns())
+                - std::min(from / grid.columns(), to / grid.columns());
+            const auto columnDistance = std::max(from % grid.columns(), to % grid.columns())
+                - std::min(from % grid.columns(), to % grid.columns());
+            const bool edge = rowDistance + columnDistance == 1 && !grid.isBlocked(from) && !grid.isBlocked(to);
+            REQUIRE(matrix[from][to] == (from == to ? 0.0 : edge ? 1.0 : inf));
+        }
+    }
+    Dijkstra search(matrix, 6, 24);
+    REQUIRE(search.run(false).found);
+}
+
+TEST_CASE("Random maze generation rejects invalid endpoints without modifying the grid", "[search][grid][maze]") {
+    Grid grid(5);
+    grid.setBlocked(3);
+    const auto before = obstacleMask(grid);
+    const auto matrix = grid.matrix();
+    REQUIRE_THROWS_AS(grid.generateMaze(grid.size(), 24, 0), std::out_of_range);
+    REQUIRE_THROWS_AS(grid.generateMaze(0, grid.size(), 0), std::out_of_range);
+    REQUIRE_THROWS_AS(grid.generateMaze(0, std::numeric_limits<std::size_t>::max(), 0), std::out_of_range);
+    REQUIRE(obstacleMask(grid) == before);
+    REQUIRE(grid.matrix() == matrix);
+}
+
+TEST_CASE("Million-cell random maze generation stays compact and connected", "[search][grid][maze][scale]") {
+    auto grid = Grid::fromCellCount(1'000'003);
+    constexpr std::size_t start = 333'333;
+    const auto goal = grid.size() - 1;
+    grid.generateMaze(start, goal, 2026);
+    REQUIRE_FALSE(grid.isBlocked(start));
+    REQUIRE_FALSE(grid.isBlocked(goal));
+    const auto reached = reachableCells(grid, start);
+    REQUIRE(reached[goal]);
+    bool allOpenCellsConnected = true;
+    for(std::size_t node = 0; node < grid.size(); ++node)
+        if(reached[node] == grid.isBlocked(node)) allOpenCellsConnected = false;
+    REQUIRE(allOpenCellsConnected);
 }
