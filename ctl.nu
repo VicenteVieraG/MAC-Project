@@ -62,7 +62,7 @@ def main [] {
 #   `includes`, then print the created and modified file paths.
 #
 # Use a new module name: repeated calls append duplicate CMake declarations.
-def "main addModule" [module: string shared: bool = false private: bool = false] {
+def "main add module" [module: string shared: bool = false private: bool = false] {
     let src_dir: string = (['src' $module] | path join);
     let includes_dir: string = (['includes' $module] | path join);
     let parent_src_CMakeLists: string = (['src' 'CMakeLists.txt'] | path join);
