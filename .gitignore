@@ -12,5 +12,10 @@ docs/html
 .vscode
 
 # Ignore AI configuration files
+AGENTS.md
 .codex
 .agents
+.aws
+
+# Ignore Tests Results and Deliverables
+output/
