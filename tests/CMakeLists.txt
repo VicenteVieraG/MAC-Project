@@ -5,6 +5,7 @@ if(BUILD_TESTS)
         add_subdirectory(${CATCH2_DIR})
         add_executable(tests
             main.cpp
+            coloring-tests/coloring-tests.cpp
             ${CMAKE_CURRENT_SOURCE_DIR}/bayes-tests/bayes-tests.cpp
             ${CMAKE_CURRENT_SOURCE_DIR}/search-tests/heap-tests.cpp
             ${CMAKE_CURRENT_SOURCE_DIR}/search-tests/dijkstra-tests.cpp
@@ -17,7 +18,8 @@ if(BUILD_TESTS)
         target_enable_clang_tidy(tests)
         target_enable_sanitizers(tests)
         target_include_directories(tests PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
-        target_link_libraries(tests PRIVATE search_core)
+        target_link_libraries(tests PRIVATE search_core coloring_core)
+        target_compile_definitions(tests PRIVATE COLORING_DATA_DIR="${PROJECT_SOURCE_DIR}/data/coloring")
 
         if(BUILD_TESTS_WITH_MAIN)
             target_link_libraries(tests

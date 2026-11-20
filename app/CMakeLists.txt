@@ -21,6 +21,9 @@ target_set_warnings(
 # Bundle runtime resources beside the executable
 add_custom_target(${CMAKE_PROJECT_NAME}_assets
     COMMAND ${CMAKE_COMMAND} -E copy_directory
+        "${PROJECT_SOURCE_DIR}/data/coloring"
+        "$<TARGET_FILE_DIR:${CMAKE_PROJECT_NAME}>/data/coloring"
+    COMMAND ${CMAKE_COMMAND} -E copy_directory
         "${PROJECT_SOURCE_DIR}/assets"
         "$<TARGET_FILE_DIR:${CMAKE_PROJECT_NAME}>/assets"
     COMMAND ${CMAKE_COMMAND} -E make_directory

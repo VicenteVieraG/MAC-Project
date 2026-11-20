@@ -4,6 +4,7 @@
 #include <home.hpp>
 #include <bayes.hpp>
 #include <search.hpp>
+#include <coloringView.hpp>
 
 class AppLayout {
     public:
@@ -16,4 +17,5 @@ class AppLayout {
         Home home;
         Bayes bayes;
         Search search;
+        coloring::ColoringView coloringView;
 };

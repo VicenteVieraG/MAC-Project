@@ -4,5 +4,6 @@ target_link_libraries(appLayout
     PUBLIC home
     PUBLIC bayes
     PUBLIC search
+    PUBLIC coloring
     PRIVATE imgui
 )

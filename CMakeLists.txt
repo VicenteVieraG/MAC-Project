@@ -1,11 +1,8 @@
 # Main CMake file
-
-#! CMake minimum version. Make sure your current CMake version is equal or greater than this
 cmake_minimum_required(VERSION 3.28.3)
 
 # Project name, version and languages
-#! Change the project name and version here
-project(MAC_Project VERSION 0.3.0 LANGUAGES C CXX)
+project(MAC_Project VERSION 0.3.1 LANGUAGES C CXX)
 set(AUTHORS "Vicente Viera | Hugo Jirano")
 
 # Configure build options
@@ -45,7 +42,6 @@ if(BUILD_TESTS)
 endif()
 
 # Subdirectories
-#! NOTE: The add_subdirectory order matters
 add_subdirectory(config)
 add_subdirectory(external)
 add_subdirectory(src)
