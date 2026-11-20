@@ -7,8 +7,7 @@
 
 namespace coloring {
 namespace {
-// Provisional "grado de error" pending the original class activity.
-int errorDegree(const Graph& graph, int v) {
+int neighborDegreeSum(const Graph& graph, int v) {
     int sum = 0;
     for (int neighbor : graph.neighbors[v]) sum += static_cast<int>(graph.neighbors[neighbor].size());
     return sum;
@@ -16,11 +15,11 @@ int errorDegree(const Graph& graph, int v) {
 
 std::vector<int> vertexOrder(const Graph& graph, Algorithm algorithm) {
     const int n = static_cast<int>(graph.labels.size());
-    std::vector<int> order(n), degree(n), error(n);
+    std::vector<int> order(n), degree(n), neighborDegreeSums(n);
     std::iota(order.begin(), order.end(), 0);
     for (int v : order) {
         degree[v] = static_cast<int>(graph.neighbors[v].size());
-        if (algorithm == Algorithm::Greedy) error[v] = errorDegree(graph, v);
+        if (algorithm == Algorithm::Greedy) neighborDegreeSums[v] = neighborDegreeSum(graph, v);
     }
     if (algorithm == Algorithm::MMI) {
         // Peel a minimum residual degree vertex; color in reverse removal order.
@@ -40,7 +39,7 @@ std::vector<int> vertexOrder(const Graph& graph, Algorithm algorithm) {
     }
     std::sort(order.begin(), order.end(), [&](int a, int b) {
         if (degree[a] != degree[b]) return degree[a] > degree[b];
-        if (error[a] != error[b]) return error[a] > error[b];
+        if (neighborDegreeSums[a] != neighborDegreeSums[b]) return neighborDegreeSums[a] > neighborDegreeSums[b];
         return graph.labels[a] < graph.labels[b];
     });
     return order;
