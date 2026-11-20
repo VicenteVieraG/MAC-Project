@@ -103,29 +103,37 @@ void ColoringView::drawControls() {
     ImGui::SeparatorText("Palette");
     ImGui::TextUnformatted("Available colors (k)");
     ImGui::SetNextItemWidth(-1);
-    bool edited = ImGui::InputInt("##k", &k);
-    ImGui::TextUnformatted("Names in priority order");
-    ImGui::SetNextItemWidth(-1);
-    edited |= ImGui::InputText("##palette", &colorNames);
-    if (edited) {
-        clearRuns();
-        try {
-            palette = parsePalette(k, colorNames);
-            paletteError.clear();
-        } catch (const std::exception& error) {
-            palette.clear();
-            paletteError = error.what();
+    int count = k;
+    if (ImGui::InputInt("##k", &count)) {
+        count = std::clamp(count, 1, maxColors);
+        if (count != k) {
+            k = count;
+            palette = makePalette(k);
+            clearRuns();
         }
     }
-    if (!paletteError.empty()) ImGui::TextWrapped("%s", paletteError.c_str());
+    if (ImGui::TreeNode("Color priority")) {
+        for (int i = 0; i < k; ++i) {
+            ImGui::PushID(i);
+            ImGui::BeginDisabled(i == 0);
+            if (ImGui::ArrowButton("Move up", ImGuiDir_Up)) {
+                std::swap(palette[i], palette[i - 1]);
+                clearRuns();
+            }
+            ImGui::EndDisabled();
+            ImGui::SetItemTooltip("Move up in priority");
+            ImGui::SameLine();
+            ImGui::Text("%d. %s", i + 1, palette[i].name.c_str());
+            ImGui::PopID();
+        }
+        ImGui::TreePop();
+    }
     ImGui::SeparatorText("Coloring strategy");
     ImGui::SetNextItemWidth(-1);
     ImGui::Combo("##Algorithm", &algorithm, algorithmNames, 3);
     ImGui::SetNextItemWidth(-1);
     ImGui::Combo("##Mode", &mode, modeNames, 4);
-    ImGui::BeginDisabled(palette.empty());
     if (ImGui::Button("Run coloring", ImVec2(-1, 0))) run(algorithm, mode);
-    ImGui::EndDisabled();
     drawExact();
 }
 
@@ -183,7 +191,7 @@ std::string ColoringView::blockersText(const Run& result) const {
         for (int v : graph.neighbors[result.failedVertex]) {
             if (result.colors[v] < 0) continue;
             if (!blockers.empty()) blockers += ", ";
-            blockers += graph.labels[v] + "=" + palette[result.colors[v]];
+            blockers += graph.labels[v] + "=" + palette[result.colors[v]].name;
         }
     }
     return blockers;

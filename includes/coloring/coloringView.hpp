@@ -5,6 +5,7 @@
 #include <coloringRun.hpp>
 
 #include <array>
+#include <cstdint>
 #include <optional>
 
 namespace coloring {
@@ -12,6 +13,12 @@ namespace coloring {
     public:
         void draw();
     private:
+        struct PaletteColor {
+            std::string name;
+            std::uint32_t swatch;
+        };
+        static std::vector<PaletteColor> makePalette(int count);
+        std::string paletteText() const;
         void load(const std::string& text, const std::string& name);
         void loadExample(int index);
         void clearRuns();
@@ -31,9 +38,8 @@ namespace coloring {
         Graph graph;
         std::string graphName, draft, filePath, inputError;
         int k = 3;
-        std::string colorNames = "Coral Teal Gold";
-        std::vector<std::string> palette{"Coral", "Teal", "Gold"};
-        std::string paletteError, exactError;
+        std::vector<PaletteColor> palette = makePalette(k);
+        std::string exactError;
         std::optional<ExactResult> exact;
         int algorithm = 0, mode = 0, selected = -1;
         std::array<std::optional<Run>, 12> runs;

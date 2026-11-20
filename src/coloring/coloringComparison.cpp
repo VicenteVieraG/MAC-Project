@@ -28,6 +28,15 @@ std::string join(const std::vector<std::string>& items) {
 }
 }
 
+std::string ColoringView::paletteText() const {
+    std::string names;
+    for (const auto& color : palette) {
+        if (!names.empty()) names += ' ';
+        names += color.name;
+    }
+    return names;
+}
+
 std::string ColoringView::csv() const {
     std::ostringstream out;
     out << "graph,vertices,edges,vertex_order,edge_list,k,palette,polynomial,chi,p_at_k,exact_calls,exact_ms,"
@@ -39,12 +48,12 @@ std::string ColoringView::csv() const {
         if (!entry) continue;
         const auto& r = *entry;
         out << field(graphName) << ',' << graph.labels.size() << ',' << graph.edges.size() << ','
-            << field(join(graph.labels)) << ',' << field(edges) << ',' << k << ',' << field(join(palette)) << ',';
+            << field(join(graph.labels)) << ',' << field(edges) << ',' << k << ',' << field(paletteText()) << ',';
         if (exact) out << field(exact->formula()) << ',' << exact->chromaticNumber << ',' << exact->evaluate(k)
                        << ',' << exact->calls << ',' << exact->milliseconds;
         else out << ",,,,";
         std::vector<std::string> assignments;
-        for (int v : r.order) assignments.push_back(graph.labels[v] + "=" + palette[r.colors[v]]);
+        for (int v : r.order) assignments.push_back(graph.labels[v] + "=" + palette[r.colors[v]].name);
         out << ',' << algorithmNames[static_cast<int>(r.algorithm)] << ',' << modeNames[static_cast<int>(r.mode)]
             << ',' << r.success() << ',' << r.order.size() << ',' << r.used << ',' << !r.success() << ',' << r.checks
             << ',' << std::setprecision(9) << r.milliseconds << ',' << r.mrvSelections << ',' << r.mrvTies
@@ -56,11 +65,7 @@ std::string ColoringView::csv() const {
 }
 
 void ColoringView::drawComparison() {
-    if (palette.empty()) {
-        ImGui::TextWrapped("Set the palette in Coloring before comparing strategies. %s", paletteError.c_str());
-        return;
-    }
-    ImGui::TextWrapped("k = %d   /   %s", k, join(palette).c_str());
+    ImGui::TextWrapped("k = %d   /   %s", k, paletteText().c_str());
     if (ImGui::Button("Compare all 12")) {
         if (!exact && graph.labels.size() <= maxExactVertices) calculateExact();
         for (int a = 0; a < 3; ++a)

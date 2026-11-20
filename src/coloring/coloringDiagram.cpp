@@ -2,27 +2,30 @@
 
 #include <algorithm>
 #include <cmath>
-#include <cctype>
 #include <numbers>
 #include <imgui.h>
 
 namespace coloring {
-namespace {
-ImU32 swatch(const std::string& name, int index) {
-    struct NamedColor { const char* name; ImU32 rgb; };
-    static constexpr NamedColor colors[]{
-        {"coral", IM_COL32(242, 135, 120, 255)}, {"teal", IM_COL32(77, 191, 177, 255)},
-        {"gold", IM_COL32(244, 196, 90, 255)}, {"red", IM_COL32(227, 77, 72, 255)},
-        {"blue", IM_COL32(93, 158, 238, 255)}, {"green", IM_COL32(108, 182, 98, 255)},
-        {"yellow", IM_COL32(246, 218, 94, 255)}, {"purple", IM_COL32(175, 138, 220, 255)},
-        {"orange", IM_COL32(246, 163, 85, 255)}, {"pink", IM_COL32(237, 147, 189, 255)},
-        {"white", IM_COL32(245, 245, 245, 255)}, {"black", IM_COL32(24, 25, 29, 255)}
+std::vector<ColoringView::PaletteColor> ColoringView::makePalette(int count) {
+    static const PaletteColor presets[]{
+        {"Coral", IM_COL32(242, 135, 120, 255)}, {"Teal", IM_COL32(77, 191, 177, 255)},
+        {"Gold", IM_COL32(244, 196, 90, 255)}, {"Red", IM_COL32(227, 77, 72, 255)},
+        {"Blue", IM_COL32(93, 158, 238, 255)}, {"Green", IM_COL32(108, 182, 98, 255)},
+        {"Yellow", IM_COL32(246, 218, 94, 255)}, {"Purple", IM_COL32(175, 138, 220, 255)},
+        {"Orange", IM_COL32(246, 163, 85, 255)}, {"Pink", IM_COL32(237, 147, 189, 255)},
+        {"White", IM_COL32(245, 245, 245, 255)}, {"Black", IM_COL32(24, 25, 29, 255)}
     };
-    std::string lower = name;
-    for (char& ch : lower) ch = static_cast<char>(std::tolower(static_cast<unsigned char>(ch)));
-    for (const auto& color : colors) if (lower == color.name) return color.rgb;
-    return ImColor::HSV(std::fmod(0.59f + index * 0.618034f, 1.0f), 0.52f, 0.89f);
-}
+    std::vector<PaletteColor> colors;
+    colors.reserve(count);
+    for (int i = 0; i < count; ++i) {
+        if (i < static_cast<int>(std::size(presets))) {
+            colors.push_back(presets[i]);
+        } else {
+            const float hue = std::fmod(0.59f + i * 0.618034f, 1.0f);
+            colors.push_back({"Color" + std::to_string(i + 1), ImColor::HSV(hue, 0.52f, 0.89f)});
+        }
+    }
+    return colors;
 }
 
 void ColoringView::drawDiagram() {
@@ -66,7 +69,7 @@ void ColoringView::drawDiagram() {
             const float w = std::max(halfHeight, size.x / 2 + 8);
             const ImVec2 lo(p.x - w, p.y - halfHeight), hi(p.x + w, p.y + halfHeight);
             const int c = result ? result->colors[v] : -1;
-            const ImU32 fill = c < 0 ? ImGui::GetColorU32(ImGuiCol_FrameBg) : swatch(palette[c], c);
+            const ImU32 fill = c < 0 ? ImGui::GetColorU32(ImGuiCol_FrameBg) : palette[c].swatch;
             draw->AddRectFilled(lo, hi, fill, halfHeight);
             const bool failed = result && static_cast<int>(v) == result->failedVertex;
             draw->AddRect(lo, hi, failed ? IM_COL32(255, 133, 111, 255) : ImGui::GetColorU32(ImGuiCol_TextDisabled),
@@ -76,7 +79,7 @@ void ColoringView::drawDiagram() {
                 ? IM_COL32(20, 27, 35, 255) : IM_COL32_WHITE;
             draw->AddText(ImVec2(p.x - size.x / 2, p.y - size.y / 2), ink, graph.labels[v].c_str());
             if (ImGui::IsWindowHovered() && ImGui::IsMouseHoveringRect(lo, hi))
-                ImGui::SetTooltip("%s: %s", graph.labels[v].c_str(), c < 0 ? "Uncolored" : palette[c].c_str());
+                ImGui::SetTooltip("%s: %s", graph.labels[v].c_str(), c < 0 ? "Uncolored" : palette[c].name.c_str());
         }
         ImGui::Dummy(ImVec2(2 * (rx + halfWidth + pad), 2 * (ry + halfHeight + pad)));
     }
@@ -84,14 +87,14 @@ void ColoringView::drawDiagram() {
     if (result) ImGui::TextWrapped("Assignment order: %s", orderText(*result).c_str());
     const float panelRight = ImGui::GetCursorScreenPos().x + ImGui::GetContentRegionAvail().x;
     for (std::size_t c = 0; c < palette.size(); ++c) {
-        const float width = ImGui::GetFrameHeight() + ImGui::CalcTextSize(palette[c].c_str()).x + 32;
+        const float width = ImGui::GetFrameHeight() + ImGui::CalcTextSize(palette[c].name.c_str()).x + 32;
         if (c && ImGui::GetItemRectMax().x + width < panelRight)
             ImGui::SameLine();
         ImGui::PushID(static_cast<int>(c));
-        ImGui::ColorButton("##swatch", ImGui::ColorConvertU32ToFloat4(swatch(palette[c], c)),
+        ImGui::ColorButton("##swatch", ImGui::ColorConvertU32ToFloat4(palette[c].swatch),
                            ImGuiColorEditFlags_NoTooltip | ImGuiColorEditFlags_NoDragDrop, ImVec2(15, 15));
         ImGui::SameLine(0, 5);
-        ImGui::TextUnformatted(palette[c].c_str());
+        ImGui::TextUnformatted(palette[c].name.c_str());
         ImGui::PopID();
     }
 }
