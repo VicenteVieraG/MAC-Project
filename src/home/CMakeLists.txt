@@ -1,2 +1,2 @@
 add_library(home STATIC home.cpp)
-target_link_libraries(home PRIVATE imgui)
+target_link_libraries(home PUBLIC raylib PRIVATE imgui)

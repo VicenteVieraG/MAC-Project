@@ -1,9 +1,20 @@
 #pragma once
 
-class Home {
-    public:
-        Home() = default;
-        ~Home() = default;
+#include <raylib.h>
 
-        void draw();
+class Home {
+public:
+    Home();
+    ~Home();
+    Home(const Home&) = delete;
+    Home& operator=(const Home&) = delete;
+
+    void draw();
+
+private:
+    Model logo{};
+    Shader sky{};
+    RenderTexture2D canvas{};
+    int resolutionLocation{};
+    int driftLocation{};
 };
